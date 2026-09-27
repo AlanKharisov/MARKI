@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="5c264e5f-c34c-415b-a5a3-7cd752a77735"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics="">
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>/* latin-ext */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b1f62e33-2189-4b23-9dd8-94d73227ac64") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("a2a459e3-7ed5-4415-91c7-d7240dbf9aff") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("b1f62e33-2189-4b23-9dd8-94d73227ac64") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("a2a459e3-7ed5-4415-91c7-d7240dbf9aff") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("b1f62e33-2189-4b23-9dd8-94d73227ac64") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("a2a459e3-7ed5-4415-91c7-d7240dbf9aff") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("b1f62e33-2189-4b23-9dd8-94d73227ac64") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("a2a459e3-7ed5-4415-91c7-d7240dbf9aff") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("b1f62e33-2189-4b23-9dd8-94d73227ac64") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("a2a459e3-7ed5-4415-91c7-d7240dbf9aff") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("aa3584ba-008a-4592-980f-af6e62a2ed94") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("334b939a-93c4-44a8-b1a9-4b5c91dd9b8f") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("dd5e1c9c-8451-4acc-ad67-6a54873adc0b") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("aa3584ba-008a-4592-980f-af6e62a2ed94") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("334b939a-93c4-44a8-b1a9-4b5c91dd9b8f") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("dd5e1c9c-8451-4acc-ad67-6a54873adc0b") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("aa3584ba-008a-4592-980f-af6e62a2ed94") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("334b939a-93c4-44a8-b1a9-4b5c91dd9b8f") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("dd5e1c9c-8451-4acc-ad67-6a54873adc0b") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;background:#eef1ee;font-family:'Sora',system-ui,sans-serif}
+a{color:#0e9f6e;text-decoration:none}a:hover{color:#057a55}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 'Sora',sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}
+.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:24px;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden}
+.dv-opt:target .dv-oid{background:#0e9f6e;color:#fff}
+.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t4" data-screen-label="Turn 4 — Green accents + Add + dark twins">
+<div class="dv-thd"><a class="dv-tid" href="#t4">4</a><span class="dv-tname">Чёрное → зелёное на белых экранах · экран Add · снизу тёмные версии</span></div>
+<div class="dv-opts">
+
+<!-- ============ 4a — Home white/green ============ -->
+<div class="dv-opt" id="4a" data-screen-label="4a Home white-green">
+<div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a>Home — All, +9 и Buy now теперь зелёные</div>
+<div class="dv-card" style="width:390px;background:#f7faf8">
+  <div style="padding:54px 20px 14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:30px;font-weight:800;color:#0c110e;letter-spacing:-1px;line-height:1.05">Market<br><span style="color:#0eaf72">place</span></div>
+      <div style="width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;border:1px solid #e3eae5;box-shadow:0 1px 4px rgba(12,17,14,.05)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#44544b" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l3 2"></path></svg></div>
+    </div>
+    <div style="margin-top:16px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e3eae5;border-radius:16px;padding:13px 14px;box-shadow:0 1px 3px rgba(12,17,14,.04)">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#93a69b" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <span style="font-size:13.5px;color:#93a69b">Search NFTs, creators…</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <div style="padding:8px 16px;border-radius:999px;background:linear-gradient(135deg,#12c07e,#0a8a5f);color:#fff;font-size:12.5px;font-weight:700;box-shadow:0 3px 8px rgba(18,192,126,.3)">All</div>
+      <div style="padding:8px 16px;border-radius:999px;background:#fff;border:1px solid #e3eae5;color:#44544b;font-size:12.5px">For Sale</div>
+      <div style="padding:8px 16px;border-radius:999px;background:#fff;border:1px solid #e3eae5;color:#44544b;font-size:12.5px">New</div>
+      <div style="padding:8px 16px;border-radius:999px;background:#fff;border:1px solid #e3eae5;color:#44544b;font-size:12.5px">Art</div>
+    </div>
+  </div>
+  <div style="padding:6px 16px 18px;display:flex;flex-direction:column;gap:16px">
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:24px;overflow:hidden;box-shadow:0 2px 12px rgba(12,17,14,.06)">
+      <div style="display:flex;align-items:center;gap:10px;padding:14px 16px 12px">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#34d399,#0e9f6e);display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700">M</div>
+        <div style="display:flex;flex-direction:column">
+          <div style="font-size:14px;font-weight:700;color:#0c110e">Aurora Water <span style="color:#0eaf72">✓</span></div>
+          <div style="font-size:11.5px;color:#93a69b">Marki Studio · 12 editions</div>
+        </div>
+        <div style="margin-left:auto;color:#93a69b;font-size:18px;letter-spacing:2px">···</div>
+      </div>
+      <div style="padding:0 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(160deg,#bfe9d6,#5fc39a);display:grid;place-items:center;color:#0b3d2c;font-size:11px">Photo 1</div>
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(160deg,#a5e1c8,#3fa274);display:grid;place-items:center;color:#0b3d2c;font-size:11px">Photo 2</div>
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(160deg,#d7f2e6,#8fd8bb);display:grid;place-items:center;color:#0b3d2c;font-size:11px">Photo 3</div>
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(135deg,#12c07e,#0a8a5f);display:grid;place-items:center;color:#fff;font-size:16px;font-weight:800;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)">+9</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px">
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#93a69b">PRICE</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#0c8f5e">1.2 SOL</div>
+          <div style="font-size:11.5px;color:#93a69b">≈ 1 980 UAH</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#12c07e,#0a8a5f);color:#fff;font-size:14px;font-weight:800;padding:14px 28px;border-radius:16px;box-shadow:0 6px 16px rgba(18,192,126,.35)">Buy now</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:18px;padding:10px 16px 14px;border-top:1px solid #eef3ef;color:#44544b;font-size:12.5px">
+        <span style="display:flex;align-items:center;gap:5px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.8 8 3 4.5 6.5 4.5c2 0 3.5 1 4.5 2.5 1-1.5 2.5-2.5 4.5-2.5C19 4.5 21.2 8 20.5 12 19 16.5 12 21 12 21z"></path></svg>24</span>
+        <span style="display:flex;align-items:center;gap:5px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-11.6 7.2L4 21l1.8-5.4A8 8 0 1 1 21 12z"></path></svg>6</span>
+        <span style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="12" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"></path></svg></span>
+      </div>
+    </div>
+  </div>
+  <div style="background:#fff;border-top:1px solid #e8efea;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:10px 8px 24px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#0c8f5e"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg><span style="font-size:10px;font-weight:700">Home</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path></svg><span style="font-size:10px">Wallet</span></div>
+    <div style="display:flex;justify-content:center"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4ef0a8,#12c07e);box-shadow:0 6px 16px rgba(18,192,126,.4);display:grid;place-items:center;margin-top:-26px;border:4px solid #f7faf8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c110e" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b;position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M10.3 21a2 2 0 0 0 3.4 0"></path></svg><span style="font-size:10px">Alerts</span><div style="position:absolute;top:-2px;right:26px;width:8px;height:8px;border-radius:50%;background:#0c8f5e;border:2px solid #fff"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg><span style="font-size:10px">Profile</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 4b — Wallet white/green ============ -->
+<div class="dv-opt" id="4b" data-screen-label="4b Wallet white-green">
+<div class="dv-olabel"><a class="dv-oid" href="#4b">4b</a>Wallet — зелёная карта баланса, зелёный переключатель</div>
+<div class="dv-card" style="width:390px;background:#f7faf8">
+  <div style="padding:54px 20px 14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:30px;font-weight:800;color:#0c110e;letter-spacing:-1px;line-height:1.05">My<br><span style="color:#0eaf72">Wallet</span></div>
+      <div style="width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;border:1px solid #e3eae5;box-shadow:0 1px 4px rgba(12,17,14,.05)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#44544b" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
+    </div>
+    <div style="margin-top:16px;background:linear-gradient(150deg,#12b981 0%,#0a8a5f 55%,#065f43 100%);border-radius:24px;padding:22px 20px;position:relative;overflow:hidden;box-shadow:0 10px 28px rgba(10,138,95,.35)">
+      <div style="position:absolute;top:-70px;right:-50px;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.22),transparent 70%)"></div>
+      <div style="position:absolute;bottom:-50px;left:-30px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(78,240,168,.25),transparent 70%)"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;position:relative">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.8px;color:rgba(255,255,255,.7)">TOTAL BALANCE</div>
+        <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:4px 10px;color:#fff;font-size:10.5px;font-weight:700"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>View only</div>
+      </div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;color:#fff;margin-top:10px;position:relative">10.00 <span style="font-size:17px;color:#bff5dd">SOL</span></div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,.75);margin-top:2px;position:relative">≈ 16 500 UAH · Marki Wallet · Verified</div>
+    </div>
+    <div style="margin-top:16px;background:#eceff2;border-radius:16px;padding:4px;display:grid;grid-template-columns:1fr 1fr 1fr">
+      <div style="text-align:center;padding:10px 0;border-radius:13px;background:linear-gradient(135deg,#12c07e,#0a8a5f);color:#fff;font-size:12.5px;font-weight:700;box-shadow:0 3px 8px rgba(18,192,126,.3)">All NFTs</div>
+      <div style="text-align:center;padding:10px 0;border-radius:13px;color:#44544b;font-size:12.5px">Listed</div>
+      <div style="text-align:center;padding:10px 0;border-radius:13px;color:#44544b;font-size:12.5px">Hidden</div>
+    </div>
+    <div style="margin-top:14px;font-size:12.5px;color:#93a69b">42 items</div>
+  </div>
+  <div style="padding:8px 16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:20px;overflow:hidden;box-shadow:0 2px 10px rgba(12,17,14,.05)">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#bfe9d6,#3fa274);display:grid;place-items:center;color:#0b3d2c;font-size:11px">Photo</div>
+        <div style="position:absolute;top:10px;left:10px;background:linear-gradient(135deg,#12c07e,#0a8a5f);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px">LISTED</div>
+      </div>
+      <div style="padding:11px 13px 13px">
+        <div style="font-size:13.5px;font-weight:700;color:#0c110e">Aurora Water #01</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:#0c8f5e">1 SOL</div>
+          <div style="font-size:11px;color:#93a69b">≈ 1 650 UAH</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:20px;overflow:hidden;box-shadow:0 2px 10px rgba(12,17,14,.05)">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#a5e1c8,#2e9c72);display:grid;place-items:center;color:#0b3d2c;font-size:11px">Photo</div>
+        <div style="position:absolute;top:10px;left:10px;background:linear-gradient(135deg,#12c07e,#0a8a5f);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px">LISTED</div>
+      </div>
+      <div style="padding:11px 13px 13px">
+        <div style="font-size:13.5px;font-weight:700;color:#0c110e">Aurora Water #02</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:#0c8f5e">1 SOL</div>
+          <div style="font-size:11px;color:#93a69b">≈ 1 650 UAH</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:20px;overflow:hidden;box-shadow:0 2px 10px rgba(12,17,14,.05)">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#fde9c8,#f0a93c);display:grid;place-items:center;color:#a1690e;font-size:11px">Cover</div>
+        <div style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.9);color:#0c110e;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px;display:flex;align-items:center;gap:4px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>FOLDER</div>
+      </div>
+      <div style="padding:11px 13px 13px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13.5px;font-weight:700;color:#0c110e">Mango</div>
+        <div style="background:#e8f7ef;color:#0c8f5e;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px">4 NFTs</div>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:20px;overflow:hidden;box-shadow:0 2px 10px rgba(12,17,14,.05)">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#fdf3c8,#e8c93c);display:grid;place-items:center;color:#8f7a0e;font-size:11px">Cover</div>
+        <div style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.9);color:#0c110e;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px;display:flex;align-items:center;gap:4px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>FOLDER</div>
+      </div>
+      <div style="padding:11px 13px 13px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13.5px;font-weight:700;color:#0c110e">Juice</div>
+        <div style="background:#e8f7ef;color:#0c8f5e;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px">4 NFTs</div>
+      </div>
+    </div>
+  </div>
+  <div style="background:#fff;border-top:1px solid #e8efea;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:10px 8px 24px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg><span style="font-size:10px">Home</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#0c8f5e"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path></svg><span style="font-size:10px;font-weight:700">Wallet</span></div>
+    <div style="display:flex;justify-content:center"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4ef0a8,#12c07e);box-shadow:0 6px 16px rgba(18,192,126,.4);display:grid;place-items:center;margin-top:-26px;border:4px solid #f7faf8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c110e" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b;position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M10.3 21a2 2 0 0 0 3.4 0"></path></svg><span style="font-size:10px">Alerts</span><div style="position:absolute;top:-2px;right:26px;width:8px;height:8px;border-radius:50%;background:#0c8f5e;border:2px solid #fff"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg><span style="font-size:10px">Profile</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 4c — Add white ============ -->
+<div class="dv-opt" id="4c" data-screen-label="4c Add — Create NFT">
+<div class="dv-olabel"><a class="dv-oid" href="#4c">4c</a>Add — создание NFT, шаг 1 из 3</div>
+<div class="dv-card" style="width:390px;background:#f7faf8">
+  <div style="padding:54px 20px 8px">
+    <div style="font-size:30px;font-weight:800;color:#0c110e;letter-spacing:-1px;line-height:1.05">Create<br><span style="color:#0eaf72">NFT</span></div>
+    <div style="margin-top:16px;background:#eceff2;border-radius:16px;padding:4px;display:grid;grid-template-columns:1fr 1fr 1fr">
+      <div style="text-align:center;padding:10px 0;border-radius:13px;background:linear-gradient(135deg,#12c07e,#0a8a5f);color:#fff;font-size:12.5px;font-weight:700;box-shadow:0 3px 8px rgba(18,192,126,.3)">Create</div>
+      <div style="text-align:center;padding:10px 0;border-radius:13px;color:#44544b;font-size:12.5px">Sell</div>
+      <div style="text-align:center;padding:10px 0;border-radius:13px;color:#44544b;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:5px">Batch <span style="background:#0eaf72;color:#fff;font-size:8.5px;font-weight:800;padding:2px 5px;border-radius:5px">BIZ</span></div>
+    </div>
+    <!-- stepper -->
+    <div style="margin-top:18px;display:flex;align-items:center;padding:0 6px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#12c07e,#0a8a5f);color:#fff;font-size:13px;font-weight:800;display:grid;place-items:center;box-shadow:0 3px 8px rgba(18,192,126,.35)">1</div>
+        <div style="font-size:10.5px;font-weight:700;color:#0c8f5e">Upload</div>
+      </div>
+      <div style="flex:1;height:2px;background:linear-gradient(to right,#12c07e,#dfe7e1);margin:0 6px 20px"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+        <div style="width:30px;height:30px;border-radius:50%;background:#fff;border:1.5px solid #dfe7e1;color:#93a69b;font-size:13px;font-weight:700;display:grid;place-items:center">2</div>
+        <div style="font-size:10.5px;color:#93a69b">Blockchain</div>
+      </div>
+      <div style="flex:1;height:2px;background:#dfe7e1;margin:0 6px 20px"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+        <div style="width:30px;height:30px;border-radius:50%;background:#fff;border:1.5px solid #dfe7e1;color:#93a69b;font-size:13px;font-weight:700;display:grid;place-items:center">3</div>
+        <div style="font-size:10.5px;color:#93a69b">Price</div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:8px 16px 18px;display:flex;flex-direction:column;gap:12px">
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:20px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(12,17,14,.05)">
+      <div>
+        <div style="font-size:13.5px;font-weight:700;color:#0c110e">Create as Collection</div>
+        <div style="font-size:11.5px;color:#93a69b;margin-top:2px">Group related NFTs together</div>
+      </div>
+      <div style="width:46px;height:27px;border-radius:999px;background:#dfe7e1;position:relative"><div style="position:absolute;top:2.5px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(12,17,14,.2)"></div></div>
+    </div>
+    <div style="background:#fff;border:1.5px solid #bfe9d6;border-radius:16px;padding:13px;display:flex;align-items:center;justify-content:center;gap:8px;color:#0c8f5e;font-size:13.5px;font-weight:700;box-shadow:0 2px 10px rgba(18,192,126,.1)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"></path></svg>Generate with AI
+    </div>
+    <div style="border:2px dashed #bcd2c4;border-radius:20px;background:#fbfdfb;padding:30px 20px;display:flex;flex-direction:column;align-items:center;gap:8px">
+      <div style="width:52px;height:52px;border-radius:16px;background:#e8f7ef;display:grid;place-items:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0c8f5e" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 9 5-5 5 5"></path><path d="M12 4v12"></path></svg></div>
+      <div style="font-size:13.5px;font-weight:700;color:#0c110e">Drag &amp; drop or tap to browse</div>
+      <div style="font-size:11.5px;color:#93a69b">2+ images → auto-collection</div>
+      <div style="font-size:10.5px;color:#b6c4ba">JPG · PNG · GIF · WebP · Max 10MB</div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#44544b;margin-bottom:6px">NFT Title <span style="color:#0eaf72">*</span></div>
+      <div style="background:#fff;border:1px solid #e3eae5;border-radius:14px;padding:13px 14px;display:flex;justify-content:space-between"><span style="font-size:13px;color:#b6c4ba">e.g. Cosmic Dream #1</span><span style="font-size:11px;color:#b6c4ba">0/60</span></div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#44544b;margin-bottom:6px">Description <span style="color:#0eaf72">*</span></div>
+      <div style="background:#fff;border:1px solid #e3eae5;border-radius:14px;padding:13px 14px;height:52px"><span style="font-size:13px;color:#b6c4ba">Describe your NFT…</span></div>
+    </div>
+    <div style="background:linear-gradient(135deg,#12c07e,#0a8a5f);color:#fff;font-size:14.5px;font-weight:800;padding:15px 0;border-radius:16px;text-align:center;box-shadow:0 6px 16px rgba(18,192,126,.35);display:flex;align-items:center;justify-content:center;gap:8px">Continue<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></div>
+  </div>
+  <div style="background:#fff;border-top:1px solid #e8efea;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:10px 8px 24px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg><span style="font-size:10px">Home</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path></svg><span style="font-size:10px">Wallet</span></div>
+    <div style="display:flex;justify-content:center"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4ef0a8,#12c07e);box-shadow:0 0 0 6px rgba(78,240,168,.25),0 6px 16px rgba(18,192,126,.45);display:grid;place-items:center;margin-top:-26px;border:4px solid #f7faf8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c110e" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b;position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M10.3 21a2 2 0 0 0 3.4 0"></path></svg><span style="font-size:10px">Alerts</span><div style="position:absolute;top:-2px;right:26px;width:8px;height:8px;border-radius:50%;background:#0c8f5e;border:2px solid #fff"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg><span style="font-size:10px">Profile</span></div>
+  </div>
+</div>
+</div>
+
+</div>
+
+<!-- dark twins row -->
+<div class="dv-thd" style="margin-top:34px"><span class="dv-tname">Те же экраны в тёмной теме</span></div>
+<div class="dv-opts">
+
+<!-- ============ 4d — Home dark ============ -->
+<div class="dv-opt" id="4d" data-screen-label="4d Home dark">
+<div class="dv-olabel"><a class="dv-oid" href="#4d">4d</a>Home — тёмная версия <a class="dv-oid" href="#4a">4a</a></div>
+<div class="dv-card" style="width:390px;background:#0c110e">
+  <div style="padding:54px 20px 14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:30px;font-weight:800;color:#f2fbf6;letter-spacing:-1px;line-height:1.05">Market<br><span style="color:#4ef0a8">place</span></div>
+      <div style="width:42px;height:42px;border-radius:50%;background:#182019;display:grid;place-items:center;border:1px solid #243029"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9db3a6" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l3 2"></path></svg></div>
+    </div>
+    <div style="margin-top:16px;display:flex;align-items:center;gap:10px;background:#151c17;border:1px solid #222c25;border-radius:16px;padding:13px 14px">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5f7368" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <span style="font-size:13.5px;color:#5f7368">Search NFTs, creators…</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <div style="padding:8px 16px;border-radius:999px;background:linear-gradient(135deg,#4ef0a8,#12c07e);color:#0c110e;font-size:12.5px;font-weight:800;box-shadow:0 3px 10px rgba(78,240,168,.25)">All</div>
+      <div style="padding:8px 16px;border-radius:999px;background:#151c17;border:1px solid #222c25;color:#9db3a6;font-size:12.5px">For Sale</div>
+      <div style="padding:8px 16px;border-radius:999px;background:#151c17;border:1px solid #222c25;color:#9db3a6;font-size:12.5px">New</div>
+      <div style="padding:8px 16px;border-radius:999px;background:#151c17;border:1px solid #222c25;color:#9db3a6;font-size:12.5px">Art</div>
+    </div>
+  </div>
+  <div style="padding:6px 16px 18px;display:flex;flex-direction:column;gap:16px">
+    <div style="background:#131a15;border:1px solid #1f2922;border-radius:24px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:14px 16px 12px">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#34d399,#0e9f6e);display:grid;place-items:center;color:#0c110e;font-size:13px;font-weight:800">M</div>
+        <div style="display:flex;flex-direction:column">
+          <div style="font-size:14px;font-weight:700;color:#f2fbf6">Aurora Water <span style="color:#4ef0a8">✓</span></div>
+          <div style="font-size:11.5px;color:#5f7368">Marki Studio · 12 editions</div>
+        </div>
+        <div style="margin-left:auto;color:#5f7368;font-size:18px;letter-spacing:2px">···</div>
+      </div>
+      <div style="padding:0 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(160deg,#1d3a2d,#2e6b4d);display:grid;place-items:center;color:#a9dfc4;font-size:11px">Photo 1</div>
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(160deg,#214534,#3fa274);display:grid;place-items:center;color:#a9dfc4;font-size:11px">Photo 2</div>
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(160deg,#183227,#2e9c72);display:grid;place-items:center;color:#a9dfc4;font-size:11px">Photo 3</div>
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(135deg,#4ef0a8,#12c07e);display:grid;place-items:center;color:#0c110e;font-size:16px;font-weight:800">+9</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px">
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#5f7368">PRICE</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#4ef0a8">1.2 SOL</div>
+          <div style="font-size:11.5px;color:#5f7368">≈ 1 980 UAH</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#4ef0a8,#12c07e);color:#0c110e;font-size:14px;font-weight:800;padding:14px 28px;border-radius:16px;box-shadow:0 6px 20px rgba(78,240,168,.3)">Buy now</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:18px;padding:10px 16px 14px;border-top:1px solid #1f2922;color:#9db3a6;font-size:12.5px">
+        <span style="display:flex;align-items:center;gap:5px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.8 8 3 4.5 6.5 4.5c2 0 3.5 1 4.5 2.5 1-1.5 2.5-2.5 4.5-2.5C19 4.5 21.2 8 20.5 12 19 16.5 12 21 12 21z"></path></svg>24</span>
+        <span style="display:flex;align-items:center;gap:5px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-11.6 7.2L4 21l1.8-5.4A8 8 0 1 1 21 12z"></path></svg>6</span>
+        <span style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="12" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"></path></svg></span>
+      </div>
+    </div>
+  </div>
+  <div style="background:#0c110e;border-top:1px solid #1f2922;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:10px 8px 24px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#4ef0a8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg><span style="font-size:10px;font-weight:700">Home</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#5f7368"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path></svg><span style="font-size:10px">Wallet</span></div>
+    <div style="display:flex;justify-content:center"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4ef0a8,#12c07e);box-shadow:0 6px 20px rgba(78,240,168,.35);display:grid;place-items:center;margin-top:-26px;border:4px solid #0c110e"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c110e" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#5f7368;position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M10.3 21a2 2 0 0 0 3.4 0"></path></svg><span style="font-size:10px">Alerts</span><div style="position:absolute;top:-2px;right:26px;width:8px;height:8px;border-radius:50%;background:#4ef0a8;border:2px solid #0c110e"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#5f7368"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg><span style="font-size:10px">Profile</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 4e — Wallet dark ============ -->
+<div class="dv-opt" id="4e" data-screen-label="4e Wallet dark">
+<div class="dv-olabel"><a class="dv-oid" href="#4e">4e</a>Wallet — тёмная версия <a class="dv-oid" href="#4b">4b</a></div>
+<div class="dv-card" style="width:390px;background:#0c110e">
+  <div style="padding:54px 20px 14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:30px;font-weight:800;color:#f2fbf6;letter-spacing:-1px;line-height:1.05">My<br><span style="color:#4ef0a8">Wallet</span></div>
+      <div style="width:42px;height:42px;border-radius:50%;background:#182019;display:grid;place-items:center;border:1px solid #243029"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9db3a6" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
+    </div>
+    <div style="margin-top:16px;background:linear-gradient(150deg,#12b981 0%,#0a8a5f 55%,#065f43 100%);border-radius:24px;padding:22px 20px;position:relative;overflow:hidden;box-shadow:0 10px 32px rgba(18,185,129,.2)">
+      <div style="position:absolute;top:-70px;right:-50px;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.22),transparent 70%)"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;position:relative">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.8px;color:rgba(255,255,255,.7)">TOTAL BALANCE</div>
+        <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:4px 10px;color:#fff;font-size:10.5px;font-weight:700"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>View only</div>
+      </div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;color:#fff;margin-top:10px;position:relative">10.00 <span style="font-size:17px;color:#bff5dd">SOL</span></div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,.75);margin-top:2px;position:relative">≈ 16 500 UAH · Marki Wallet · Verified</div>
+    </div>
+    <div style="margin-top:16px;background:#151c17;border:1px solid #222c25;border-radius:16px;padding:4px;display:grid;grid-template-columns:1fr 1fr 1fr">
+      <div style="text-align:center;padding:10px 0;border-radius:13px;background:linear-gradient(135deg,#4ef0a8,#12c07e);color:#0c110e;font-size:12.5px;font-weight:800">All NFTs</div>
+      <div style="text-align:center;padding:10px 0;border-radius:13px;color:#9db3a6;font-size:12.5px">Listed</div>
+      <div style="text-align:center;padding:10px 0;border-radius:13px;color:#9db3a6;font-size:12.5px">Hidden</div>
+    </div>
+    <div style="margin-top:14px;font-size:12.5px;color:#5f7368">42 items</div>
+  </div>
+  <div style="padding:8px 16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div style="background:#131a15;border:1px solid #1f2922;border-radius:20px;overflow:hidden">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#1d3a2d,#3fa274);display:grid;place-items:center;color:#a9dfc4;font-size:11px">Photo</div>
+        <div style="position:absolute;top:10px;left:10px;background:linear-gradient(135deg,#4ef0a8,#12c07e);color:#0c110e;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px">LISTED</div>
+      </div>
+      <div style="padding:11px 13px 13px">
+        <div style="font-size:13.5px;font-weight:700;color:#f2fbf6">Aurora Water #01</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:#4ef0a8">1 SOL</div>
+          <div style="font-size:11px;color:#5f7368">≈ 1 650 UAH</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#131a15;border:1px solid #1f2922;border-radius:20px;overflow:hidden">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#214534,#2e9c72);display:grid;place-items:center;color:#a9dfc4;font-size:11px">Photo</div>
+        <div style="position:absolute;top:10px;left:10px;background:linear-gradient(135deg,#4ef0a8,#12c07e);color:#0c110e;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px">LISTED</div>
+      </div>
+      <div style="padding:11px 13px 13px">
+        <div style="font-size:13.5px;font-weight:700;color:#f2fbf6">Aurora Water #02</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:#4ef0a8">1 SOL</div>
+          <div style="font-size:11px;color:#5f7368">≈ 1 650 UAH</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#131a15;border:1px solid #1f2922;border-radius:20px;overflow:hidden">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#3a2c14,#6b5220);display:grid;place-items:center;color:#d9b871;font-size:11px">Cover</div>
+        <div style="position:absolute;top:10px;left:10px;background:rgba(12,17,14,.75);border:1px solid rgba(78,240,168,.3);color:#4ef0a8;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px;display:flex;align-items:center;gap:4px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>FOLDER</div>
+      </div>
+      <div style="padding:11px 13px 13px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13.5px;font-weight:700;color:#f2fbf6">Mango</div>
+        <div style="background:rgba(78,240,168,.12);color:#4ef0a8;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px">4 NFTs</div>
+      </div>
+    </div>
+    <div style="background:#131a15;border:1px solid #1f2922;border-radius:20px;overflow:hidden">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#3a3514,#6b5f20);display:grid;place-items:center;color:#d9cf71;font-size:11px">Cover</div>
+        <div style="position:absolute;top:10px;left:10px;background:rgba(12,17,14,.75);border:1px solid rgba(78,240,168,.3);color:#4ef0a8;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px;display:flex;align-items:center;gap:4px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>FOLDER</div>
+      </div>
+      <div style="padding:11px 13px 13px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13.5px;font-weight:700;color:#f2fbf6">Juice</div>
+        <div style="background:rgba(78,240,168,.12);color:#4ef0a8;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px">4 NFTs</div>
+      </div>
+    </div>
+  </div>
+  <div style="background:#0c110e;border-top:1px solid #1f2922;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:10px 8px 24px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#5f7368"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg><span style="font-size:10px">Home</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#4ef0a8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path></svg><span style="font-size:10px;font-weight:700">Wallet</span></div>
+    <div style="display:flex;justify-content:center"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4ef0a8,#12c07e);box-shadow:0 6px 20px rgba(78,240,168,.35);display:grid;place-items:center;margin-top:-26px;border:4px solid #0c110e"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c110e" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#5f7368;position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M10.3 21a2 2 0 0 0 3.4 0"></path></svg><span style="font-size:10px">Alerts</span><div style="position:absolute;top:-2px;right:26px;width:8px;height:8px;border-radius:50%;background:#4ef0a8;border:2px solid #0c110e"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#5f7368"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg><span style="font-size:10px">Profile</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 4f — Add dark ============ -->
+<div class="dv-opt" id="4f" data-screen-label="4f Add dark">
+<div class="dv-olabel"><a class="dv-oid" href="#4f">4f</a>Add — тёмная версия <a class="dv-oid" href="#4c">4c</a></div>
+<div class="dv-card" style="width:390px;background:#0c110e">
+  <div style="padding:54px 20px 8px">
+    <div style="font-size:30px;font-weight:800;color:#f2fbf6;letter-spacing:-1px;line-height:1.05">Create<br><span style="color:#4ef0a8">NFT</span></div>
+    <div style="margin-top:16px;background:#151c17;border:1px solid #222c25;border-radius:16px;padding:4px;display:grid;grid-template-columns:1fr 1fr 1fr">
+      <div style="text-align:center;padding:10px 0;border-radius:13px;background:linear-gradient(135deg,#4ef0a8,#12c07e);color:#0c110e;font-size:12.5px;font-weight:800">Create</div>
+      <div style="text-align:center;padding:10px 0;border-radius:13px;color:#9db3a6;font-size:12.5px">Sell</div>
+      <div style="text-align:center;padding:10px 0;border-radius:13px;color:#9db3a6;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:5px">Batch <span style="background:#4ef0a8;color:#0c110e;font-size:8.5px;font-weight:800;padding:2px 5px;border-radius:5px">BIZ</span></div>
+    </div>
+    <div style="margin-top:18px;display:flex;align-items:center;padding:0 6px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#4ef0a8,#12c07e);color:#0c110e;font-size:13px;font-weight:800;display:grid;place-items:center">1</div>
+        <div style="font-size:10.5px;font-weight:700;color:#4ef0a8">Upload</div>
+      </div>
+      <div style="flex:1;height:2px;background:linear-gradient(to right,#12c07e,#222c25);margin:0 6px 20px"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+        <div style="width:30px;height:30px;border-radius:50%;background:#151c17;border:1.5px solid #2c3830;color:#5f7368;font-size:13px;font-weight:700;display:grid;place-items:center">2</div>
+        <div style="font-size:10.5px;color:#5f7368">Blockchain</div>
+      </div>
+      <div style="flex:1;height:2px;background:#222c25;margin:0 6px 20px"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+        <div style="width:30px;height:30px;border-radius:50%;background:#151c17;border:1.5px solid #2c3830;color:#5f7368;font-size:13px;font-weight:700;display:grid;place-items:center">3</div>
+        <div style="font-size:10.5px;color:#5f7368">Price</div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:8px 16px 18px;display:flex;flex-direction:column;gap:12px">
+    <div style="background:#131a15;border:1px solid #1f2922;border-radius:20px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:13.5px;font-weight:700;color:#f2fbf6">Create as Collection</div>
+        <div style="font-size:11.5px;color:#5f7368;margin-top:2px">Group related NFTs together</div>
+      </div>
+      <div style="width:46px;height:27px;border-radius:999px;background:#2c3830;position:relative"><div style="position:absolute;top:2.5px;left:3px;width:22px;height:22px;border-radius:50%;background:#5f7368"></div></div>
+    </div>
+    <div style="background:rgba(78,240,168,.06);border:1.5px solid rgba(78,240,168,.35);border-radius:16px;padding:13px;display:flex;align-items:center;justify-content:center;gap:8px;color:#4ef0a8;font-size:13.5px;font-weight:700">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"></path></svg>Generate with AI
+    </div>
+    <div style="border:2px dashed #2c3830;border-radius:20px;background:#10160f;padding:30px 20px;display:flex;flex-direction:column;align-items:center;gap:8px">
+      <div style="width:52px;height:52px;border-radius:16px;background:rgba(78,240,168,.1);display:grid;place-items:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ef0a8" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 9 5-5 5 5"></path><path d="M12 4v12"></path></svg></div>
+      <div style="font-size:13.5px;font-weight:700;color:#f2fbf6">Drag &amp; drop or tap to browse</div>
+      <div style="font-size:11.5px;color:#5f7368">2+ images → auto-collection</div>
+      <div style="font-size:10.5px;color:#44544b">JPG · PNG · GIF · WebP · Max 10MB</div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#9db3a6;margin-bottom:6px">NFT Title <span style="color:#4ef0a8">*</span></div>
+      <div style="background:#151c17;border:1px solid #222c25;border-radius:14px;padding:13px 14px;display:flex;justify-content:space-between"><span style="font-size:13px;color:#44544b">e.g. Cosmic Dream #1</span><span style="font-size:11px;color:#44544b">0/60</span></div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#9db3a6;margin-bottom:6px">Description <span style="color:#4ef0a8">*</span></div>
+      <div style="background:#151c17;border:1px solid #222c25;border-radius:14px;padding:13px 14px;height:52px"><span style="font-size:13px;color:#44544b">Describe your NFT…</span></div>
+    </div>
+    <div style="background:linear-gradient(135deg,#4ef0a8,#12c07e);color:#0c110e;font-size:14.5px;font-weight:800;padding:15px 0;border-radius:16px;text-align:center;box-shadow:0 6px 20px rgba(78,240,168,.3);display:flex;align-items:center;justify-content:center;gap:8px">Continue<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></div>
+  </div>
+  <div style="background:#0c110e;border-top:1px solid #1f2922;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:10px 8px 24px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#5f7368"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg><span style="font-size:10px">Home</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#5f7368"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path></svg><span style="font-size:10px">Wallet</span></div>
+    <div style="display:flex;justify-content:center"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4ef0a8,#12c07e);box-shadow:0 0 0 6px rgba(78,240,168,.15),0 6px 20px rgba(78,240,168,.4);display:grid;place-items:center;margin-top:-26px;border:4px solid #0c110e"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c110e" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#5f7368;position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M10.3 21a2 2 0 0 0 3.4 0"></path></svg><span style="font-size:10px">Alerts</span><div style="position:absolute;top:-2px;right:26px;width:8px;height:8px;border-radius:50%;background:#4ef0a8;border:2px solid #0c110e"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#5f7368"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg><span style="font-size:10px">Profile</span></div>
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Дальше: «делаем Alerts и Profile» · «шаги 2 и 3 для Add» · «останавливаемся на белой / тёмной теме»</p>
+</section>
+
+<section class="dv-turn" id="t3" data-screen-label="Turn 3 — Home final + Wallet (White Mint)">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">White Mint: Home с сеткой фото 3+N, зелёная кнопка + · Wallet (только просмотр)</span></div>
+<div class="dv-opts">
+
+<!-- ============ 3a — Home final ============ -->
+<div class="dv-opt" id="3a" data-screen-label="3a Home — White Mint final">
+<div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Home — сетка 3 фото + «+9», зелёный FAB</div>
+<div class="dv-card" style="width:390px;background:#f7faf8">
+
+  <div style="padding:54px 20px 14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:30px;font-weight:800;color:#0c110e;letter-spacing:-1px;line-height:1.05">Market<br><span style="color:#0eaf72">place</span></div>
+      <div style="width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;border:1px solid #e3eae5;box-shadow:0 1px 4px rgba(12,17,14,.05)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#44544b" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l3 2"></path></svg></div>
+    </div>
+    <div style="margin-top:16px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e3eae5;border-radius:16px;padding:13px 14px;box-shadow:0 1px 3px rgba(12,17,14,.04)">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#93a69b" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <span style="font-size:13.5px;color:#93a69b">Search NFTs, creators…</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <div style="padding:8px 16px;border-radius:999px;background:#0c110e;color:#4ef0a8;font-size:12.5px;font-weight:700">All</div>
+      <div style="padding:8px 16px;border-radius:999px;background:#fff;border:1px solid #e3eae5;color:#44544b;font-size:12.5px">For Sale</div>
+      <div style="padding:8px 16px;border-radius:999px;background:#fff;border:1px solid #e3eae5;color:#44544b;font-size:12.5px">New</div>
+      <div style="padding:8px 16px;border-radius:999px;background:#fff;border:1px solid #e3eae5;color:#44544b;font-size:12.5px">Art</div>
+    </div>
+  </div>
+
+  <div style="padding:6px 16px 18px;display:flex;flex-direction:column;gap:16px">
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:24px;overflow:hidden;box-shadow:0 2px 12px rgba(12,17,14,.06)">
+      <div style="display:flex;align-items:center;gap:10px;padding:14px 16px 12px">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#34d399,#0e9f6e);display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700">M</div>
+        <div style="display:flex;flex-direction:column">
+          <div style="font-size:14px;font-weight:700;color:#0c110e">Aurora Water <span style="color:#0eaf72">✓</span></div>
+          <div style="font-size:11.5px;color:#93a69b">Marki Studio · 12 editions</div>
+        </div>
+        <div style="margin-left:auto;color:#93a69b;font-size:18px;letter-spacing:2px">···</div>
+      </div>
+      <!-- photo grid: 3 photos + counter -->
+      <div style="padding:0 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(160deg,#bfe9d6,#5fc39a);display:grid;place-items:center;color:#0b3d2c;font-size:11px">Photo 1</div>
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(160deg,#a5e1c8,#3fa274);display:grid;place-items:center;color:#0b3d2c;font-size:11px">Photo 2</div>
+        <div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(160deg,#d7f2e6,#8fd8bb);display:grid;place-items:center;color:#0b3d2c;font-size:11px">Photo 3</div>
+        <div style="aspect-ratio:1;border-radius:14px;background:#0c110e;display:grid;place-items:center;color:#4ef0a8;font-size:16px;font-weight:800">+9</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px">
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#93a69b">PRICE</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#0c8f5e">1.2 SOL</div>
+          <div style="font-size:11.5px;color:#93a69b">≈ 1 980 UAH</div>
+        </div>
+        <div style="background:#0c110e;color:#4ef0a8;font-size:14px;font-weight:800;padding:14px 28px;border-radius:16px;box-shadow:0 6px 16px rgba(12,17,14,.25)">Buy now</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:18px;padding:10px 16px 14px;border-top:1px solid #eef3ef;color:#44544b;font-size:12.5px">
+        <span style="display:flex;align-items:center;gap:5px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.8 8 3 4.5 6.5 4.5c2 0 3.5 1 4.5 2.5 1-1.5 2.5-2.5 4.5-2.5C19 4.5 21.2 8 20.5 12 19 16.5 12 21 12 21z"></path></svg>24</span>
+        <span style="display:flex;align-items:center;gap:5px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-11.6 7.2L4 21l1.8-5.4A8 8 0 1 1 21 12z"></path></svg>6</span>
+        <span style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="12" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"></path></svg></span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:24px;overflow:hidden;box-shadow:0 2px 12px rgba(12,17,14,.06)">
+      <div style="height:110px;background:linear-gradient(160deg,#fde9c8,#f8c471);display:grid;place-items:center;color:#a1690e;font-size:11px">Cover photo</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 14px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#0c110e">Mango Frequency</div>
+          <div style="font-size:11.5px;color:#93a69b">Tropic Lab ✓</div>
+        </div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#0c8f5e">0.8 SOL</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#fff;border-top:1px solid #e8efea;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:10px 8px 24px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#0c8f5e"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg><span style="font-size:10px;font-weight:700">Home</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path></svg><span style="font-size:10px">Wallet</span></div>
+    <div style="display:flex;justify-content:center"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4ef0a8,#12c07e);box-shadow:0 6px 16px rgba(18,192,126,.4);display:grid;place-items:center;margin-top:-26px;border:4px solid #f7faf8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c110e" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b;position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M10.3 21a2 2 0 0 0 3.4 0"></path></svg><span style="font-size:10px">Alerts</span><div style="position:absolute;top:-2px;right:26px;width:8px;height:8px;border-radius:50%;background:#0c8f5e;border:2px solid #fff"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg><span style="font-size:10px">Profile</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 3b — Wallet ============ -->
+<div class="dv-opt" id="3b" data-screen-label="3b Wallet — White Mint">
+<div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Wallet — только просмотр: баланс + All / Listed / Hidden</div>
+<div class="dv-card" style="width:390px;background:#f7faf8">
+
+  <div style="padding:54px 20px 14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:30px;font-weight:800;color:#0c110e;letter-spacing:-1px;line-height:1.05">My<br><span style="color:#0eaf72">Wallet</span></div>
+      <div style="width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;border:1px solid #e3eae5;box-shadow:0 1px 4px rgba(12,17,14,.05)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#44544b" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
+    </div>
+
+    <!-- balance card: view only -->
+    <div style="margin-top:16px;background:linear-gradient(150deg,#0c110e 0%,#12281c 60%,#174d33 100%);border-radius:24px;padding:22px 20px;position:relative;overflow:hidden;box-shadow:0 10px 28px rgba(12,17,14,.25)">
+      <div style="position:absolute;top:-70px;right:-50px;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle,rgba(78,240,168,.25),transparent 70%)"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;position:relative">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.8px;color:#7d9488">TOTAL BALANCE</div>
+        <div style="display:flex;align-items:center;gap:5px;background:rgba(78,240,168,.12);border:1px solid rgba(78,240,168,.25);border-radius:999px;padding:4px 10px;color:#4ef0a8;font-size:10.5px;font-weight:700"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>View only</div>
+      </div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;color:#fff;margin-top:10px;position:relative">10.00 <span style="font-size:17px;color:#4ef0a8">SOL</span></div>
+      <div style="font-size:12.5px;color:#7d9488;margin-top:2px;position:relative">≈ 16 500 UAH · Marki Wallet · Verified</div>
+    </div>
+
+    <!-- segmented -->
+    <div style="margin-top:16px;background:#eceff2;border-radius:16px;padding:4px;display:grid;grid-template-columns:1fr 1fr 1fr">
+      <div style="text-align:center;padding:10px 0;border-radius:13px;background:#0c110e;color:#4ef0a8;font-size:12.5px;font-weight:700">All NFTs</div>
+      <div style="text-align:center;padding:10px 0;border-radius:13px;color:#44544b;font-size:12.5px">Listed</div>
+      <div style="text-align:center;padding:10px 0;border-radius:13px;color:#44544b;font-size:12.5px">Hidden</div>
+    </div>
+    <div style="margin-top:14px;font-size:12.5px;color:#93a69b">42 items</div>
+  </div>
+
+  <!-- NFT grid -->
+  <div style="padding:8px 16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:20px;overflow:hidden;box-shadow:0 2px 10px rgba(12,17,14,.05)">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#bfe9d6,#3fa274);display:grid;place-items:center;color:#0b3d2c;font-size:11px">Photo</div>
+        <div style="position:absolute;top:10px;left:10px;background:#0c110e;color:#4ef0a8;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px">LISTED</div>
+      </div>
+      <div style="padding:11px 13px 13px">
+        <div style="font-size:13.5px;font-weight:700;color:#0c110e">Aurora Water #01</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:#0c8f5e">1 SOL</div>
+          <div style="font-size:11px;color:#93a69b">≈ 1 650 UAH</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:20px;overflow:hidden;box-shadow:0 2px 10px rgba(12,17,14,.05)">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#a5e1c8,#2e9c72);display:grid;place-items:center;color:#0b3d2c;font-size:11px">Photo</div>
+        <div style="position:absolute;top:10px;left:10px;background:#0c110e;color:#4ef0a8;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px">LISTED</div>
+      </div>
+      <div style="padding:11px 13px 13px">
+        <div style="font-size:13.5px;font-weight:700;color:#0c110e">Aurora Water #02</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:#0c8f5e">1 SOL</div>
+          <div style="font-size:11px;color:#93a69b">≈ 1 650 UAH</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:20px;overflow:hidden;box-shadow:0 2px 10px rgba(12,17,14,.05)">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#fde9c8,#f0a93c);display:grid;place-items:center;color:#a1690e;font-size:11px">Cover</div>
+        <div style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.9);color:#0c110e;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px;display:flex;align-items:center;gap:4px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>FOLDER</div>
+      </div>
+      <div style="padding:11px 13px 13px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13.5px;font-weight:700;color:#0c110e">Mango</div>
+        <div style="background:#e8f7ef;color:#0c8f5e;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px">4 NFTs</div>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #e8efea;border-radius:20px;overflow:hidden;box-shadow:0 2px 10px rgba(12,17,14,.05)">
+      <div style="position:relative">
+        <div style="aspect-ratio:1;background:linear-gradient(160deg,#fdf3c8,#e8c93c);display:grid;place-items:center;color:#8f7a0e;font-size:11px">Cover</div>
+        <div style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.9);color:#0c110e;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:999px;display:flex;align-items:center;gap:4px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>FOLDER</div>
+      </div>
+      <div style="padding:11px 13px 13px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13.5px;font-weight:700;color:#0c110e">Juice</div>
+        <div style="background:#e8f7ef;color:#0c8f5e;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px">4 NFTs</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#fff;border-top:1px solid #e8efea;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:10px 8px 24px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg><span style="font-size:10px">Home</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#0c8f5e"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path></svg><span style="font-size:10px;font-weight:700">Wallet</span></div>
+    <div style="display:flex;justify-content:center"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4ef0a8,#12c07e);box-shadow:0 6px 16px rgba(18,192,126,.4);display:grid;place-items:center;margin-top:-26px;border:4px solid #f7faf8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c110e" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b;position:relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M10.3 21a2 2 0 0 0 3.4 0"></path></svg><span style="font-size:10px">Alerts</span><div style="position:absolute;top:-2px;right:26px;width:8px;height:8px;border-radius:50%;background:#0c8f5e;border:2px solid #fff"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#93a69b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg><span style="font-size:10px">Profile</span></div>
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Дальше: «делаем Add (создание NFT)» · «в Wallet покажи вкладку Hidden» · «поменяй сетку фото на <a class="dv-oid" href="#3a">3a</a>»</p>
+</section>
+
+</x-dc>
+
+
+</body></html>

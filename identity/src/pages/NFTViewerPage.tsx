@@ -7,7 +7,8 @@ interface NFT {
   title: string;
   description: string;
   image: string;
-  ownerId: string;
+  ownerId?: string;
+  userId?: string;
   ownerName: string;
   price?: number;
   currency?: string;
@@ -51,7 +52,7 @@ const NFTViewerPage: React.FC<NFTViewerPageProps> = ({ nft, onClose }) => {
     try {
       // Create a standard URL so regular phone cameras can scan and open it natively
       const baseUrl = window.location.origin + (window.location.pathname.includes('/idenity') ? '/idenity' : '');
-      const qrData = `${baseUrl}/nft/${nft.id}`;
+      const qrData = `${baseUrl}/nft/${nft.id}?issuer=idenity&owner=${encodeURIComponent(nft.ownerId || nft.userId || '')}&v=1`;
       const url = await QRCode.toDataURL(qrData, {
         width: 300,
         margin: 2,
@@ -68,7 +69,8 @@ const NFTViewerPage: React.FC<NFTViewerPageProps> = ({ nft, onClose }) => {
       const baseUrl = window.location.origin + (window.location.pathname.includes('/idenity') ? '/idenity' : '');
       // Collection-level QR (links to first item)
       const firstItemId = (nft.walletNftIds && nft.walletNftIds.length > 0) ? nft.walletNftIds[0] : nft.id;
-      const collectionData = `${baseUrl}/nft/${firstItemId}`;
+      const ownerId = encodeURIComponent(nft.ownerId || nft.userId || '');
+      const collectionData = `${baseUrl}/nft/${firstItemId}?issuer=idenity&owner=${ownerId}&v=1`;
       const collQr = await QRCode.toDataURL(collectionData, {
         width: 300, margin: 2,
         color: { dark: '#0a0a0a', light: '#ffffff' },
@@ -80,7 +82,7 @@ const NFTViewerPage: React.FC<NFTViewerPageProps> = ({ nft, onClose }) => {
       const urls: string[] = [];
       for (let i = 0; i < (nft.nftImages?.length || 0); i++) {
         const itemId = ids[i] || `${nft.id}_item_${i}`;
-        const itemData = `${baseUrl}/nft/${itemId}`;
+        const itemData = `${baseUrl}/nft/${itemId}?issuer=idenity&owner=${ownerId}&v=1`;
         const url = await QRCode.toDataURL(itemData, {
           width: 300, margin: 2,
           color: { dark: '#0a0a0a', light: '#ffffff' },

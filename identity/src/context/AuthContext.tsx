@@ -28,6 +28,8 @@ export interface UserData {
     deliveryAddress?: string;
     roles?: string[];
     companyId?: string;
+    ratingOverall?: number;
+    ratingByCategory?: Record<string, number>;
 }
 
 interface AuthContextType {
@@ -83,7 +85,7 @@ const getUserLocation = async (): Promise<string> => {
 const mapUser = (u: any): UserData => ({
     uid:             u.uid,
     name:            u.name,
-    username:        u.username,
+    username:        String(u.username || '').replace(/^@+/, ''),
     email:           u.email,
     phone:           u.phone,
     avatar:          u.avatar || '/img/default-avatar.png',
@@ -93,6 +95,8 @@ const mapUser = (u: any): UserData => ({
     companyApproved: u.companyApproved ?? false,
     pendingApproval: u.pendingApproval ?? false,
     deliveryAddress: u.deliveryAddress,
+    ratingOverall:   u.ratingOverall ?? 0,
+    ratingByCategory: u.ratingByCategory ?? {},
 });
 
 const syncFirebaseUser = async (firebaseUser: User) => {
@@ -156,9 +160,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const updateUserProfile = async (data: { name?: string; bio?: string; avatar?: string; username?: string; location?: string }) => {
         if (!currentUser) return;
+        const normalizedData = data.username === undefined
+            ? data
+            : { ...data, username: data.username.replace(/^@+/, '') };
         try {
-            await apiUpdateProfile(currentUser.uid, data);
-            setCurrentUser(prev => prev ? { ...prev, ...data } : null);
+            await apiUpdateProfile(currentUser.uid, normalizedData);
+            setCurrentUser(prev => prev ? { ...prev, ...normalizedData } : null);
         } catch (e) { console.error('Profile update error:', e); }
     };
 
@@ -220,8 +227,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = async (email: string, password: string) => {
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            return { success: true };
+            const credential = await signInWithEmailAndPassword(auth, email, password);
+            const userData = await syncFirebaseUser(credential.user);
+            if (!userData) {
+                return {
+                    success: false,
+                    error: 'Signed in, but your profile could not be loaded. Check the API connection and try again.',
+                };
+            }
+            setCurrentUser(userData);
+            return { success: true, user: userData };
         } catch (e: any) {
             return { success: false, error: e.message };
         }
@@ -231,20 +246,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: string, password: string, name: string, username: string, phone?: string
     ) => {
         let firebaseUser = null;
+        const normalizedUsername = username.replace(/^@+/, '');
         try {
             const result = await createUserWithEmailAndPassword(auth, email, password);
             firebaseUser = result.user;
             await updateProfile(result.user, { displayName: name });
 
             // Create profile + wallet on Rust backend (public endpoint)
-            await apiRegister({ uid: result.user.uid, name, username, email, phone });
+            await apiRegister({ uid: result.user.uid, name, username: normalizedUsername, email, phone });
 
             // Attach location (best-effort, token is now available)
             const location = await getUserLocation();
             try { await apiUpdateProfile(result.user.uid, { location }); } catch { /* non-critical */ }
 
             const userData: UserData = {
-                uid: result.user.uid, name, username, email, phone: phone || '',
+                uid: result.user.uid, name, username: normalizedUsername, email, phone: phone || '',
                 avatar: '/img/default-avatar.png', location, bio: '',
                 createdAt: new Date().toISOString(),
             };

@@ -6,6 +6,7 @@ import { Icon } from '../components/brand';
 interface WalletPageProps {
   onNFTClick: (nft: any) => void;
   onSellNFT:  (nft: any) => void;
+  onOpenSettings: () => void;
 }
 
 const getNFTImage = (nft: any): string => nft.image || nft.imageUrl || nft.nftImage || '/img/default-nft.png';
@@ -128,7 +129,11 @@ const buildWalletEntries = (nfts: any[]): WalletEntry[] => {
   });
 };
 
-const WalletPage: React.FC<WalletPageProps> = ({ onNFTClick, onSellNFT }) => {
+const WalletPage: React.FC<WalletPageProps> = ({
+  onNFTClick,
+  onSellNFT,
+  onOpenSettings,
+}) => {
   const { currentUser } = useAuth();
   const [myNFTs, setMyNFTs] = useState<any[]>([]);
   const [cryptoWallets, setCryptoWallets] = useState<any[]>([]);
@@ -207,78 +212,62 @@ const WalletPage: React.FC<WalletPageProps> = ({ onNFTClick, onSellNFT }) => {
   return (
     <div className="page wallet-page active mi-screen-pad" style={{ paddingTop: 16, paddingBottom: 148 }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <h1 className="h2">Wallet</h1>
-        <button
-          aria-label="Settings"
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: 'var(--bg-soft)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text)',
-          }}
-        >
-          <Icon.Settings />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+        <h1 className="hero-title">My<br /><span className="accent">Wallet</span></h1>
+        <button aria-label="Settings" className="icon-btn-round" onClick={onOpenSettings}>
+          <Icon.Settings size={18} />
         </button>
       </div>
 
       {/* Balance card */}
       <div
         style={{
-          padding: 20,
-          borderRadius: 18,
-          background: 'linear-gradient(135deg, #0c5a44 0%, #10b981 100%)',
+          marginTop: 16,
+          padding: '22px 20px 24px',
+          borderRadius: 24,
+          background: 'var(--grad-balance)',
           color: 'white',
           position: 'relative',
           overflow: 'hidden',
           marginBottom: 16,
+          boxShadow: '0 10px 28px rgba(10,138,95,.35)',
         }}
       >
         <div
           style={{
             position: 'absolute',
-            top: -20, right: -20,
-            width: 120, height: 120,
+            top: -70, right: -50,
+            width: 210, height: 210,
             borderRadius: '50%',
-            background: 'rgba(255,255,255,0.08)',
+            background: 'radial-gradient(circle, rgba(255,255,255,.22), transparent 70%)',
           }}
         />
-        <div className="mono" style={{ fontSize: 12, opacity: 0.7, letterSpacing: '0.1em' }}>TOTAL BALANCE</div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 4 }}>
-          <span style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.03em' }}>
-            {totalBalance.toFixed(2)}
-          </span>
-          <span style={{ fontSize: 14, opacity: 0.7 }}>SOL</span>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: -50, left: -30,
+            width: 160, height: 160,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(78,240,168,.25), transparent 70%)',
+          }}
+        />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+          <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 1.8, color: 'rgba(255,255,255,.7)' }}>TOTAL BALANCE</div>
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              background: 'rgba(255,255,255,.16)',
+              border: '1px solid rgba(255,255,255,.25)',
+              borderRadius: 999,
+              padding: '4px 10px',
+              color: '#fff', fontSize: 10.5, fontWeight: 700,
+            }}
+          >
+            Marki Wallet
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-          {[
-            { l: 'Send', icon: <Icon.Send size={16} /> },
-            { l: 'Receive', icon: <Icon.Receive size={16} /> },
-            { l: 'Buy', icon: <Icon.Plus size={16} /> },
-          ].map(b => (
-            <button
-              key={b.l}
-              style={{
-                flex: 1,
-                padding: '10px',
-                borderRadius: 12,
-                background: 'rgba(255,255,255,0.18)',
-                color: 'white',
-                fontSize: 13,
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-              }}
-            >
-              {b.icon} {b.l}
-            </button>
-          ))}
+        <div className="mono" style={{ fontSize: 36, fontWeight: 700, marginTop: 12, position: 'relative' }}>
+          {totalBalance.toFixed(2)} <span style={{ fontSize: 17, color: '#bff5dd' }}>SOL</span>
         </div>
       </div>
 
@@ -292,41 +281,19 @@ const WalletPage: React.FC<WalletPageProps> = ({ onNFTClick, onSellNFT }) => {
           padding: '4px 0 12px',
         }}
       >
-        <div style={{ fontSize: 16, fontWeight: 700 }}>
-          My NFTs <span style={{ color: 'var(--text-faint)', fontWeight: 500 }}>{walletEntries.length}</span>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            gap: 6,
-            width: '100%',
-            padding: 5,
-            borderRadius: 16,
-            background: 'var(--bg-soft)',
-            border: '1px solid var(--border)',
-          }}
-        >
+        <div className="seg" style={{ width: '100%' }}>
           {FILTERS.map(filter => (
             <button
               key={filter.id}
               onClick={() => setTab(filter.id)}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                padding: '11px 8px',
-                borderRadius: 12,
-                background: tab === filter.id ? 'var(--primary)' : 'transparent',
-                color: tab === filter.id ? 'white' : 'var(--text)',
-                fontSize: 12,
-                lineHeight: 1.2,
-                fontWeight: tab === filter.id ? 800 : 700,
-                boxShadow: tab === filter.id ? '0 8px 18px rgba(12,90,68,0.22)' : 'none',
-                whiteSpace: 'normal',
-              }}
+              className={`seg-item ${tab === filter.id ? 'active' : ''}`}
             >
               {filter.label}
             </button>
           ))}
+        </div>
+        <div style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>
+          {walletEntries.length} items
         </div>
       </div>
 
@@ -407,14 +374,14 @@ function NFTCard({
           <div
             style={{
               position: 'absolute',
-              top: 8, left: 8,
-              padding: '3px 8px',
+              top: 10, left: 10,
+              padding: '4px 9px',
               borderRadius: 999,
-              background: 'var(--primary)',
-              color: 'white',
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: '0.05em',
+              background: 'var(--grad-cta)',
+              color: 'var(--on-primary)',
+              fontSize: 9.5,
+              fontWeight: 800,
+              letterSpacing: '0.8px',
             }}
           >
             LISTED

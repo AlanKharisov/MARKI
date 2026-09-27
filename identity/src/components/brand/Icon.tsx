@@ -39,7 +39,11 @@ export const Icon = {
     <svg {...base(size)} fill={filled ? 'currentColor' : 'none'} {...p}><path d="M12 21s-7-4.5-9.5-9C.5 8 3 4 7 4c2 0 3.5 1 5 3 1.5-2 3-3 5-3 4 0 6.5 4 4.5 8C19 16.5 12 21 12 21z" /></svg>
   ),
   Comment: ({ size, ...p }: IconProps) => (
-    <svg {...base(size)} {...p}><path d="M21 12a8 8 0 11-3.5-6.6L21 5l-1 4a8 8 0 011 3z" /></svg>
+    <svg {...base(size)} {...p}>
+      <g transform="translate(1 0) rotate(180 12 12)">
+        <path d="M21 12a8 8 0 11-3.5-6.6L21 5l-1 4a8 8 0 011 3z" />
+      </g>
+    </svg>
   ),
   Share: ({ size, ...p }: IconProps) => (
     <svg {...base(size)} {...p}><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="6" r="2.5" /><circle cx="18" cy="18" r="2.5" /><path d="M8 11l8-4M8 13l8 4" /></svg>

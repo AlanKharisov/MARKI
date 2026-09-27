@@ -1,12 +1,20 @@
 import { auth } from '../firebase/config';
+import { Capacitor } from '@capacitor/core';
 
 const LOCAL_API_URL = 'http://localhost:8090';
-const PROD_API_URL = 'https://idenity-backend.duckdns.org';
+const PROD_API_URL = 'https://idenity.onrender.com';
 
 const envApiUrl = process.env.REACT_APP_API_URL;
-const BASE_URL = process.env.NODE_ENV === 'development'
-    ? envApiUrl || LOCAL_API_URL
-    : PROD_API_URL;
+const isLoopbackUrl = (url?: string) =>
+    Boolean(url && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(?:\/|$)/i.test(url));
+
+// localhost inside a Capacitor Android WebView points to the phone/emulator,
+// not to the developer's Mac. Never bake a loopback API into a native APK.
+const BASE_URL = Capacitor.isNativePlatform() && isLoopbackUrl(envApiUrl)
+    ? PROD_API_URL
+    : process.env.NODE_ENV === 'development'
+        ? envApiUrl || LOCAL_API_URL
+        : (envApiUrl || PROD_API_URL);
 
 console.log('[API] API_BASE_URL:', BASE_URL);
 
@@ -97,6 +105,12 @@ export const apiGetMintInfo = () => get<{
 
 export const apiGetNFTs   = ()                            => get<any[]>('/api/nfts');
 export const apiGetNFT    = (id: string)                   => get<any>(`/api/nfts/${id}`);
+export const apiVerifyNFT = (d: { nftId: string; ownerId: string }) => post<{
+    issuedByIdenity: boolean;
+    issuerVerified: boolean;
+    issuerName: string;
+    nft: any;
+}>('/api/nfts/verify', d);
 export const apiCreateNFT = (form: FormData)              => postForm<any>('/api/nfts', form);
 export const apiUpdateNFT = (id: string, d: any)          => put<any>(`/api/nfts/${id}`, d);
 export const apiDeleteNFT = (id: string)                  => del<any>(`/api/nfts/${id}`);
@@ -123,6 +137,19 @@ export const apiBuyNFT = (d: {
     nftId: string;
 }) => post<any>('/api/marketplace/buy', d);
 
+export type PaymentQuote = {
+    quoteId: string;
+    sourcePrice: number;
+    sourceCurrency: string;
+    sellerLamports: number;
+    feeLamports: number;
+    totalLamports: number;
+    expiresAtUnix: number;
+};
+
+export const apiGetPaymentQuote = (nftId: string, postId: string) =>
+    post<PaymentQuote>(`/api/nfts/${nftId}/payment-quote`, { postId });
+
 /** Called immediately after an on-chain Solana transaction confirms.
  *  Syncs Firestore: moves the NFT from the seller's wallet to the buyer's
  *  wallet and marks the post as no longer for sale. */
@@ -130,9 +157,12 @@ export const apiTransferNFT = (
     nftId:    string,   // wallet NFT ID (nft.walletNftId || nft.id)
     sellerId: string,   // seller's Firebase UID (nft.userId)
     postId:   string,   // marketplace post ID
+    signature: string,  // confirmed Solana payment signature
+    payerAddress: string,
+    quoteId: string,
 ) => post<{ success: boolean; newNftId: string }>(
     `/api/nfts/${nftId}/transfer`,
-    { sellerId, postId },
+    { sellerId, postId, signature, payerAddress, quoteId },
 );
 
 export const apiCashOnDelivery = (d: {

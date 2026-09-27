@@ -81,7 +81,7 @@ const WalletSettingsPage: React.FC<WalletSettingsPageProps> = ({ onBack }) => {
             <style>{`@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
 
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '15px' }}>
-                <button onClick={onBack} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#01ff77', padding: '10px' }}>
+                <button onClick={onBack} aria-label="Back" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#01ff77', padding: '10px' }}>
                     <i className="fas fa-arrow-left"></i>
                 </button>
                 <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: 0 }}>Marki Wallet</h2>
@@ -96,7 +96,7 @@ const WalletSettingsPage: React.FC<WalletSettingsPageProps> = ({ onBack }) => {
                         <span style={{ flex: 1, fontFamily: 'monospace', fontSize: '12px', wordBreak: 'break-all' }}>
                             {wallet?.address || '—'}
                         </span>
-                        <button style={iconBtn} onClick={() => copyToClipboard(wallet?.address || '')}>
+                        <button style={iconBtn} aria-label="Copy wallet address" onClick={() => copyToClipboard(wallet?.address || '')}>
                             <i className="fas fa-copy"></i>
                         </button>
                     </div>

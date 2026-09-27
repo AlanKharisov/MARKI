@@ -5,6 +5,7 @@ import { useUmi } from '../hooks/useUmi';
 import { generateSigner, percentAmount, lamports, publicKey as umiPublicKey, some } from '@metaplex-foundation/umi';
 import { createNft } from '@metaplex-foundation/mpl-token-metadata';
 import { transferSol } from '@metaplex-foundation/mpl-toolbox';
+import { useLanguage } from '../context/LanguageContext';
 
 // ─── Platform treasury ────────────────────────────────────────────────────────
 // TODO: replace with your real treasury wallet before going to mainnet.
@@ -103,6 +104,8 @@ interface AddNFTPageProps {
 
 const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
     const { currentUser } = useAuth();
+    const { language } = useLanguage();
+    const uk = language === 'uk';
     const { umi, isReady: walletReady, connect: connectPhantom } = useUmi();
     const fileInputRef    = useRef<HTMLInputElement>(null);
     const batchInputRef   = useRef<HTMLInputElement>(null);
@@ -746,23 +749,36 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
 
     // ── Mode tabs (3 buttons) ─────────────────────────────────────────────────
     const ModeTabs = () => (
-        <div style={s.modeTabs}>
-            <button
-                style={{ ...s.modeTab, background: mode === 'create' ? 'var(--bg-card)' : 'transparent', color: mode === 'create' ? 'var(--text)' : 'var(--text-muted)', boxShadow: mode === 'create' ? 'var(--shadow-sm)' : 'none' }}
-                onClick={() => { setMode('create'); setSelectedWalletNFT(null); }}
-            >Create</button>
-            <button
-                style={{ ...s.modeTab, background: mode === 'wallet' ? 'var(--bg-card)' : 'transparent', color: mode === 'wallet' ? 'var(--text)' : 'var(--text-muted)', boxShadow: mode === 'wallet' ? 'var(--shadow-sm)' : 'none' }}
-                onClick={() => setMode('wallet')}
-            >Sell</button>
-            <button
-                style={{ ...s.modeTab, background: mode === 'batch' ? 'var(--bg-card)' : 'transparent', color: mode === 'batch' ? 'var(--text)' : 'var(--text-muted)', boxShadow: mode === 'batch' ? 'var(--shadow-sm)' : 'none' }}
-                onClick={() => setMode('batch')}
-            >
-                Batch
-                <span style={{ marginLeft: 6, padding: '1px 6px', borderRadius: 999, background: 'var(--primary)', color: 'white', fontSize: 10, fontWeight: 700 }}>BIZ</span>
-            </button>
-        </div>
+        <>
+          <div style={{ padding: '18px 20px 0' }}>
+              <h1 className="hero-title">{uk ? 'Створити' : 'Create'}<br /><span className="accent">NFT</span></h1>
+              <div className="seg" style={{ marginTop: 16 }}>
+                <button
+                    className={`seg-item ${mode === 'create' ? 'active' : ''}`}
+                    onClick={() => { setMode('create'); setSelectedWalletNFT(null); }}
+                >{uk ? 'Створити' : 'Create'}</button>
+                <button
+                    className={`seg-item ${mode === 'wallet' ? 'active' : ''}`}
+                    onClick={() => setMode('wallet')}
+                >{uk ? 'Продати' : 'Sell'}</button>
+                <button
+                    className={`seg-item ${mode === 'batch' ? 'active' : ''}`}
+                    onClick={() => setMode('batch')}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}
+                >
+                    {uk ? 'Пакет' : 'Batch'}
+                    <span style={{ padding: '2px 5px', borderRadius: 5, background: mode === 'batch' ? 'rgba(255,255,255,0.25)' : 'var(--primary)', color: mode === 'batch' ? 'var(--on-primary)' : 'white', fontSize: 8.5, fontWeight: 800 }}>BIZ</span>
+                </button>
+              </div>
+          </div>
+          {!currentUser?.companyApproved && (
+              <div style={{ margin: '12px 20px 0', padding: '12px 14px', borderRadius: 12, background: 'rgba(217,119,6,.08)', border: '1px solid rgba(217,119,6,.22)', color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.55 }}>
+                  {uk
+                    ? <><strong style={{ color: 'var(--warn)' }}>Неверифікований емітент:</strong> Idenity стягує 3% комісії з наступних перепродажів через платформу. Політика записується в on-chain metadata NFT; її виконання на зовнішніх маркетплейсах залежить від підтримки роялті.</>
+                    : <><strong style={{ color: 'var(--warn)' }}>Unverified issuer:</strong> Idenity charges a 3% platform fee on subsequent resales made through Idenity. This policy is recorded in the NFT on-chain metadata. Enforcement on external marketplaces depends on their royalty support.</>}
+              </div>
+          )}
+        </>
     );
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -1133,29 +1149,29 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
             <div style={s.progressWrap}>
                 {([1, 2, 3] as Step[]).map(i => (
                     <React.Fragment key={i}>
-                        <div style={{ ...s.progressStep, background: step >= i ? 'var(--primary)' : 'var(--bg-soft)', color: step >= i ? 'white' : 'var(--text-faint)' }}>
+                        <div style={{ ...s.progressStep, background: step >= i ? 'var(--grad-cta)' : 'var(--bg-card)', border: step >= i ? 'none' : '1.5px solid var(--border-strong)', color: step >= i ? 'var(--on-primary)' : 'var(--text-faint)', boxShadow: step >= i ? 'var(--shadow-chip)' : 'none' }}>
                             {step > i ? '✓' : i}
                         </div>
-                        {i < 3 && <div style={{ ...s.progressLine, background: step > i ? 'var(--primary)' : 'var(--border)' }} />}
+                        {i < 3 && <div style={{ ...s.progressLine, background: step > i ? 'linear-gradient(to right, #12c07e, var(--border-strong))' : 'var(--border-strong)' }} />}
                     </React.Fragment>
                 ))}
             </div>
             <div style={s.stepLabels}>
-                <span style={step === 1 ? s.labelActive : s.label}>Upload</span>
-                <span style={step === 2 ? s.labelActive : s.label}>Blockchain</span>
-                <span style={step === 3 ? s.labelActive : s.label}>Price</span>
+                <span style={step === 1 ? s.labelActive : s.label}>{uk ? 'Файл' : 'Upload'}</span>
+                <span style={step === 2 ? s.labelActive : s.label}>{uk ? 'Блокчейн' : 'Blockchain'}</span>
+                <span style={step === 3 ? s.labelActive : s.label}>{uk ? 'Ціна' : 'Price'}</span>
             </div>
 
             {/* Step 1 */}
             {step === 1 && (
                 <div style={s.stepContent}>
-                    <h2 style={s.stepTitle}>Upload your NFT</h2>
+                    <h2 style={s.stepTitle}>{uk ? 'Завантажте ваше NFT' : 'Upload your NFT'}</h2>
 
                     {/* Collection toggle */}
                     <div style={{ ...s.toggleRow, marginBottom: '16px' }}>
                         <div>
-                            <div style={{ fontWeight: 'bold', color: 'var(--text)' }}>Create as Collection</div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Group related NFTs into a collection</div>
+                            <div style={{ fontWeight: 'bold', color: 'var(--text)' }}>{uk ? 'Створити як колекцію' : 'Create as Collection'}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{uk ? 'Об’єднайте пов’язані NFT в одну колекцію' : 'Group related NFTs into a collection'}</div>
                         </div>
                         <div style={{ ...s.toggle, background: isCollection ? 'var(--primary)' : 'var(--border-strong)' }} onClick={() => setIsCollection(!isCollection)}>
                             <div style={{ ...s.toggleThumb, left: isCollection ? '26px' : '4px' }} />
@@ -1164,7 +1180,7 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
 
                     {isCollection && (
                         <div style={s.field}>
-                            <label style={s.fieldLabel}>Collection Name</label>
+                            <label style={s.fieldLabel}>{uk ? 'Назва колекції' : 'Collection Name'}</label>
                             <input style={s.input} placeholder="e.g. Cosmic Dreams Series"
                                    value={collectionName} maxLength={60}
                                    onChange={e => setCollectionName(e.target.value)} />
@@ -1197,7 +1213,7 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
                                 ) : (
                                     <div style={s.dropContent}>
                                         <div style={{ fontSize: '40px', marginBottom: '10px' }}>🖼</div>
-                                        <p style={{ fontWeight: 'bold', color: 'var(--text)', marginBottom: '4px' }}>Select multiple images</p>
+                                        <p style={{ fontWeight: 'bold', color: 'var(--text)', marginBottom: '4px' }}>{uk ? 'Оберіть кілька зображень' : 'Select multiple images'}</p>
                                         <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '4px' }}>Hold Ctrl / ⌘ to select many at once</p>
                                         <p style={{ color: 'var(--text-faint)', fontSize: '11px' }}>JPG, PNG, GIF, WebP · Max 10MB each</p>
                                     </div>
@@ -1230,7 +1246,7 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
                                         style={{ width: '100%', padding: '12px', background: 'var(--bg-card)', color: 'var(--text)', border: '1px solid var(--border-strong)', borderRadius: 999, fontWeight: 600, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit' }}
                                         onClick={() => { setShowAiPanel(!showAiPanel); setAiError(''); }}
                                     >
-                                        ✨ Generate with AI
+                                        ✨ {uk ? 'Створити за допомогою AI' : 'Generate with AI'}
                                     </button>
                                     {showAiPanel && (
                                         <div style={{ background: 'var(--primary-faint)', border: '1px solid var(--primary-soft)', borderRadius: 14, padding: 14, marginTop: 10 }}>
@@ -1289,8 +1305,8 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
                                 ) : (
                                     <div style={s.dropContent}>
                                         <div style={{ fontSize: '40px', marginBottom: '10px' }}>📁</div>
-                                        <p style={{ fontWeight: 'bold', color: 'var(--text)', marginBottom: '4px' }}>Drag & drop or click to browse</p>
-                                        <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '4px' }}>Select 2+ images → auto-collection</p>
+                                        <p style={{ fontWeight: 'bold', color: 'var(--text)', marginBottom: '4px' }}>{uk ? 'Перетягніть файл або натисніть для вибору' : 'Drag & drop or click to browse'}</p>
+                                        <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '4px' }}>{uk ? '2+ зображення автоматично створять колекцію' : 'Select 2+ images → auto-collection'}</p>
                                         <p style={{ color: 'var(--text-faint)', fontSize: '11px' }}>JPG, PNG, GIF, WebP · Max 10MB</p>
                                     </div>
                                 )}
@@ -1311,19 +1327,19 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
                     )}
 
                     <div style={s.field}>
-                        <label style={s.fieldLabel}>NFT Title *</label>
+                        <label style={s.fieldLabel}>{uk ? 'Назва NFT *' : 'NFT Title *'}</label>
                         <input style={s.input} placeholder="e.g. Cosmic Dream #1" value={title} maxLength={60} onChange={e => setTitle(e.target.value)} />
                         <span style={s.charCount}>{title.length}/60</span>
                     </div>
                     <div style={s.field}>
-                        <label style={s.fieldLabel}>Description *</label>
+                        <label style={s.fieldLabel}>{uk ? 'Опис *' : 'Description *'}</label>
                         <textarea style={{ ...s.input, height: '90px', resize: 'none' } as any}
-                                  placeholder="Describe your NFT..." value={description} maxLength={300}
+                                  placeholder={uk ? 'Опишіть ваше NFT...' : 'Describe your NFT...'} value={description} maxLength={300}
                                   onChange={e => setDescription(e.target.value)} />
                         <span style={s.charCount}>{description.length}/300</span>
                     </div>
                     <div style={s.field}>
-                        <label style={s.fieldLabel}>Category</label>
+                        <label style={s.fieldLabel}>{uk ? 'Категорія' : 'Category'}</label>
                         <div style={s.chipRow}>
                             {CATEGORIES.map(cat => (
                                 <button key={cat} style={{ ...s.chip, background: category === cat ? 'var(--primary-soft)' : 'var(--bg-soft)', color: category === cat ? 'var(--primary-ink)' : 'var(--text-muted)', borderColor: category === cat ? 'var(--primary)' : 'transparent' }}
@@ -1332,12 +1348,12 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
                         </div>
                     </div>
                     <div style={s.field}>
-                        <label style={s.fieldLabel}>Tags (up to 8)</label>
+                        <label style={s.fieldLabel}>{uk ? 'Теги (до 8)' : 'Tags (up to 8)'}</label>
                         <div style={s.tagInputRow}>
                             <input style={{ ...s.input, flex: 1, margin: 0 }} placeholder="#tag" value={tagInput}
                                    onChange={e => setTagInput(e.target.value)}
                                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput, tags, setTags, setTagInput); }}} />
-                            <button style={s.addTagBtn} onClick={() => addTag(tagInput, tags, setTags, setTagInput)}>Add</button>
+                            <button style={s.addTagBtn} onClick={() => addTag(tagInput, tags, setTags, setTagInput)}>{uk ? 'Додати' : 'Add'}</button>
                         </div>
                         {tags.length > 0 && (
                             <div style={s.tagsRow}>
@@ -1353,7 +1369,7 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
             {/* Step 2 */}
             {step === 2 && (
                 <div style={s.stepContent}>
-                    <h2 style={s.stepTitle}>Choose Blockchain</h2>
+                    <h2 style={s.stepTitle}>{uk ? 'Оберіть блокчейн' : 'Choose Blockchain'}</h2>
                     {BLOCKCHAINS.map(chain => (
                         <div key={chain.id} style={{ ...s.chainCard, borderColor: blockchain === chain.id ? 'var(--primary)' : 'var(--border)', background: blockchain === chain.id ? 'var(--primary-faint)' : 'var(--bg-card)' }}
                              onClick={() => { setBlockchain(chain.id); setCurrency(chain.currency); }}>
@@ -1399,10 +1415,15 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
                     )}
 
                     <div style={s.field}>
-                        <label style={s.fieldLabel}>Royalty: <strong style={{ color: 'var(--primary)' }}>{royalty}%</strong></label>
+                        <label style={s.fieldLabel}>{uk ? 'Роялті' : 'Royalty'}: <strong style={{ color: 'var(--primary)' }}>{royalty}%</strong></label>
                         <input type="range" min="0" max="30" step="1" value={royalty} onChange={e => setRoyalty(e.target.value)} style={s.slider} />
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-faint)' }}>
                             <span>0%</span><span>15%</span><span>30%</span>
+                        </div>
+                        <div style={{ marginTop: 10, padding: '11px 12px', borderRadius: 10, background: 'var(--primary-faint)', color: 'var(--primary-ink)', fontSize: 12, lineHeight: 1.55 }}>
+                            {uk
+                              ? 'Роялті — це відсоток від кожного наступного перепродажу NFT, який отримує його початковий автор або бренд. Наприклад, при роялті 10% і перепродажі за 1 SOL автор отримає 0,1 SOL.'
+                              : 'Royalty is the percentage of each future NFT resale paid to its original creator or brand. For example, with a 10% royalty and a 1 SOL resale, the creator receives 0.1 SOL.'}
                         </div>
                     </div>
                 </div>
@@ -1411,7 +1432,7 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
             {/* Step 3 */}
             {step === 3 && (
                 <div style={s.stepContent}>
-                    <h2 style={s.stepTitle}>Review & Price</h2>
+                    <h2 style={s.stepTitle}>{uk ? 'Перевірка та ціна' : 'Review & Price'}</h2>
                     {previewUrl && (
                         <div style={s.reviewCard}>
                             <img src={previewUrl} alt={title} style={s.reviewImg} />
@@ -1431,8 +1452,8 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
 
                     <div style={s.toggleRow}>
                         <div>
-                            <div style={{ fontWeight: 'bold', color: 'var(--text)' }}>List for Sale</div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Make available to buy</div>
+                            <div style={{ fontWeight: 'bold', color: 'var(--text)' }}>{uk ? 'Виставити на продаж' : 'List for Sale'}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{uk ? 'Зробити доступним для покупки' : 'Make available to buy'}</div>
                         </div>
                         <div style={{ ...s.toggle, background: forSale ? 'var(--primary)' : 'var(--border-strong)' }} onClick={() => setForSale(!forSale)}>
                             <div style={{ ...s.toggleThumb, left: forSale ? '26px' : '4px' }} />
@@ -1473,12 +1494,12 @@ const AddNFTPage: React.FC<AddNFTPageProps> = ({ preselectedNFT }) => {
             {/* Navigation */}
             <div style={s.navRow}>
                 {step > 1 && (
-                    <button style={s.backBtn} onClick={() => setStep((step - 1) as Step)} disabled={loading}>← Back</button>
+                    <button style={s.backBtn} onClick={() => setStep((step - 1) as Step)} disabled={loading}>← {uk ? 'Назад' : 'Back'}</button>
                 )}
                 {step < 3 ? (
                     <button style={{ ...s.nextBtn, opacity: canGoNext() ? 1 : 0.5, flex: step === 1 ? 1 : undefined }}
                             onClick={() => setStep((step + 1) as Step)} disabled={!canGoNext()}>
-                        Next →
+                        {uk ? 'Далі' : 'Next'} →
                     </button>
                 ) : (
                     !walletReady ? (
@@ -1515,12 +1536,12 @@ const s: any = {
     modeTabs:      { display: 'flex', margin: '16px 20px 0', background: 'var(--bg-soft)', borderRadius: 12, padding: 4, gap: 4 },
     modeTab:       { flex: 1, padding: '10px', border: 'none', borderRadius: 9, cursor: 'pointer', fontWeight: 600, fontSize: 13, color: 'var(--text-muted)', background: 'transparent', position: 'relative', fontFamily: 'inherit' },
     progressWrap:  { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 30px 8px', gap: 8 },
-    progressStep:  { width: 28, height: 28, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0, background: 'var(--bg-soft)', color: 'var(--text-faint)' },
+    progressStep:  { width: 30, height: 30, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0, background: 'var(--bg-card)', color: 'var(--text-faint)' },
     progressLine:  { flex: 1, height: 2 },
     stepLabels:    { display: 'flex', justifyContent: 'space-between', padding: '0 28px', marginBottom: 16 },
     label:         { fontSize: 11, color: 'var(--text-faint)', flex: 1, textAlign: 'center', fontWeight: 600 },
     labelActive:   { fontSize: 11, color: 'var(--text)', fontWeight: 700, flex: 1, textAlign: 'center' },
-    stepContent:   { background: 'var(--bg-card)', margin: '0 20px', borderRadius: 16, padding: 20, border: '1px solid var(--border)' },
+    stepContent:   { background: 'var(--bg-card)', margin: '0 20px', borderRadius: 20, padding: 20, border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)' },
     stepTitle:     { fontSize: 20, fontWeight: 700, color: 'var(--text)', marginBottom: 4, letterSpacing: '-0.02em' },
     stepSub:       { fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 },
     miniSpinner:   { width: 32, height: 32, border: '3px solid var(--border)', borderTop: '3px solid var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto' },
@@ -1534,19 +1555,19 @@ const s: any = {
     sellPreviewImg:{ width: 60, height: 60, borderRadius: 10, objectFit: 'cover', flexShrink: 0 },
     changeBtn:     { background: 'var(--bg-card)', border: '1px solid var(--border-strong)', borderRadius: 999, padding: '5px 10px', fontSize: 11, cursor: 'pointer', color: 'var(--text-muted)', flexShrink: 0, fontFamily: 'inherit' },
     priceNote:     { fontSize: 12, color: 'var(--text-muted)', marginTop: 6, padding: '8px 10px', background: 'var(--bg-soft)', borderRadius: 10 },
-    dropZone:      { border: '2px dashed var(--border-strong)', borderRadius: 16, minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: 20, transition: 'all 0.2s', overflow: 'hidden', background: 'var(--bg-soft)' },
+    dropZone:      { border: '2px dashed var(--border-strong)', borderRadius: 20, minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: 20, transition: 'all 0.2s', overflow: 'hidden', background: 'var(--primary-faint)' },
     dropContent:   { textAlign: 'center', padding: 20 },
     previewWrap:   { position: 'relative', width: '100%' },
     previewImg:    { width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' },
     removeImgBtn:  { position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: 999, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' },
     field:         { marginBottom: 18 },
     fieldLabel:    { display: 'block', fontWeight: 600, fontSize: 13, color: 'var(--text-muted)', marginBottom: 6 },
-    input:         { width: '100%', padding: '14px 16px', border: '1px solid transparent', borderRadius: 12, fontSize: 15, background: 'var(--bg-soft)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' },
+    input:         { width: '100%', padding: '13px 14px', border: '1px solid var(--border-strong)', borderRadius: 14, fontSize: 14, background: 'var(--bg-card)', color: 'var(--text)', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' },
     charCount:     { fontSize: 11, color: 'var(--text-faint)', float: 'right', marginTop: 3 },
     chipRow:       { display: 'flex', flexWrap: 'wrap', gap: 8 },
     chip:          { padding: '6px 12px', border: '1px solid transparent', borderRadius: 999, cursor: 'pointer', fontSize: 13, fontWeight: 500, fontFamily: 'inherit', background: 'var(--bg-soft)', color: 'var(--text-muted)' },
     tagInputRow:   { display: 'flex', gap: 8, marginBottom: 10 },
-    addTagBtn:     { padding: '0 18px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 999, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', fontSize: 14, fontFamily: 'inherit' },
+    addTagBtn:     { padding: '0 18px', background: 'var(--grad-cta)', color: 'var(--on-primary)', border: 'none', borderRadius: 14, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', fontSize: 14, fontFamily: 'inherit' },
     tagsRow:       { display: 'flex', flexWrap: 'wrap', gap: 8 },
     tagBadge:      { background: 'var(--primary-soft)', color: 'var(--primary-ink)', border: '1px solid var(--primary)', borderRadius: 999, padding: '4px 10px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, fontWeight: 600 },
     tagRemove:     { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-ink)', fontSize: 11, padding: 0, fontFamily: 'inherit' },
@@ -1561,15 +1582,15 @@ const s: any = {
     toggleThumb:   { position: 'absolute', width: 20, height: 20, background: 'var(--bg-card)', borderRadius: '50%', top: 4, transition: 'left 0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' },
     currencySelect:{ padding: '14px 12px', border: '1px solid transparent', borderRadius: 12, background: 'var(--bg-soft)', fontSize: 15, fontWeight: 600, minWidth: 90, color: 'var(--text)', fontFamily: 'inherit' },
     navRow:        { display: 'flex', gap: 12, padding: '16px 20px', position: 'sticky', bottom: 70, background: 'linear-gradient(transparent, var(--bg-page) 30%)' },
-    backBtn:       { padding: '12px 22px', background: 'var(--bg-soft)', border: 'none', borderRadius: 999, fontSize: 14, fontWeight: 600, cursor: 'pointer', color: 'var(--text)', fontFamily: 'inherit' },
-    nextBtn:       { padding: '14px 30px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 999, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' },
+    backBtn:       { padding: '12px 22px', background: 'var(--bg-card)', border: '1px solid var(--border-strong)', borderRadius: 16, fontSize: 14, fontWeight: 600, cursor: 'pointer', color: 'var(--text)', fontFamily: 'inherit' },
+    nextBtn:       { padding: '15px 30px', background: 'var(--grad-cta)', color: 'var(--on-primary)', border: 'none', borderRadius: 16, fontSize: 14.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: 'var(--shadow-cta)' },
     btnSpinner:    { width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid white', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' },
     successBox:    { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px', textAlign: 'center' },
-    successCircle: { width: 96, height: 96, background: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44, marginBottom: 20, color: 'white', boxShadow: '0 16px 40px rgba(16,185,129,0.35)' },
+    successCircle: { width: 96, height: 96, background: 'var(--grad-fab)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44, marginBottom: 20, color: 'white', boxShadow: '0 16px 40px rgba(18,192,126,0.35)' },
     successTitle:  { fontSize: 26, fontWeight: 700, color: 'var(--text)', marginBottom: 10, letterSpacing: '-0.02em' },
     successText:   { fontSize: 15, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 },
     successPreview:{ width: 180, height: 180, borderRadius: 16, objectFit: 'cover', marginBottom: 24, boxShadow: 'var(--shadow-lg)' },
-    primaryBtn:    { padding: '14px 36px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 999, fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' },
+    primaryBtn:    { padding: '15px 36px', background: 'var(--grad-cta)', color: 'var(--on-primary)', border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: 'var(--shadow-cta)' },
 };
 
 export default AddNFTPage;

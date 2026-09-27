@@ -9,12 +9,16 @@ import {
     AuthProvider,
     UserCredential
 } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
 import { auth } from './config';
 import { apiMe, apiRegister } from '../services/apiClient';
 
-const isMobile = (): boolean => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-};
+// signInWithRedirect only works when the page shares storage with authDomain.
+// On GitHub Pages (alankharisov.github.io ≠ idenity-e7f29.firebaseapp.com)
+// browsers partition third-party storage and getRedirectResult comes back
+// null, so every browser — mobile included — must use the popup flow.
+// The redirect flow stays for the native Capacitor app only.
+const isNativeRedirectFlow = (): boolean => Capacitor.isNativePlatform();
 
 const signInWithMobileRedirect = async (provider: AuthProvider) => {
     await setPersistence(auth, browserLocalPersistence);
@@ -25,7 +29,8 @@ const signInWithMobileRedirect = async (provider: AuthProvider) => {
 export const signInWithGoogle = async (): Promise<{ success: boolean; user?: any; error?: string }> => {
     try {
         const provider = new GoogleAuthProvider();
-        if (isMobile()) {
+        provider.setCustomParameters({ prompt: 'select_account' });
+        if (isNativeRedirectFlow()) {
             await signInWithMobileRedirect(provider);
             return { success: true };
         }
@@ -41,7 +46,7 @@ export const signInWithGoogle = async (): Promise<{ success: boolean; user?: any
 export const signInWithFacebook = async (): Promise<{ success: boolean; user?: any; error?: string }> => {
     try {
         const provider = new FacebookAuthProvider();
-        if (isMobile()) {
+        if (isNativeRedirectFlow()) {
             await signInWithMobileRedirect(provider);
             return { success: true };
         }
@@ -57,7 +62,7 @@ export const signInWithFacebook = async (): Promise<{ success: boolean; user?: a
 export const signInWithApple = async (): Promise<{ success: boolean; user?: any; error?: string }> => {
     try {
         const provider = new OAuthProvider('apple.com');
-        if (isMobile()) {
+        if (isNativeRedirectFlow()) {
             await signInWithMobileRedirect(provider);
             return { success: true };
         }

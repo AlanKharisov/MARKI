@@ -1,33 +1,31 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { apiUploadAvatar, apiChangePassword, apiRequestApproval } from '../services/apiClient';
+import { apiUploadAvatar, apiRequestApproval } from '../services/apiClient';
 import { Icon } from '../components/brand';
 import QrScannerPage from './QrScannerPage';
+import { Language, useLanguage } from '../context/LanguageContext';
 
 interface ProfilePageProps {
   onOpenWalletSettings: () => void;
   onOpenCryptoWallets:  () => void;
+  onOpenNftWallet:      () => void;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ onOpenWalletSettings, onOpenCryptoWallets }) => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ onOpenWalletSettings, onOpenCryptoWallets, onOpenNftWallet }) => {
   const { currentUser, logout, updateUserProfile, refreshLocation } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [currentPage, setCurrentPage] = useState<'profile' | 'security' | 'company' | 'edit-profile' | 'qr-scanner'>('profile');
   const [avatarLoading, setAvatarLoading] = useState(false);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', username: '', bio: '', location: '' });
   const [saving, setSaving] = useState(false);
-
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   const [companyName, setCompanyName] = useState('');
   const [regNumber, setRegNumber] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [companyDesc, setCompanyDesc] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
   if (!currentUser) {
     return (
       <div className="page active mi-screen-pad" style={{ paddingTop: 80, textAlign: 'center' }}>
@@ -89,19 +87,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onOpenWalletSettings, onOpenC
     if (window.confirm('Are you sure you want to logout?')) await logout();
   };
 
-  const changePassword = async () => {
-    if (newPassword !== confirmNewPassword) { alert('New passwords do not match'); return; }
-    if (newPassword.length < 8) { alert('Password must be at least 8 characters'); return; }
-    try {
-      await apiChangePassword(currentUser.uid, { newPassword });
-      setNewPassword('');
-      setConfirmNewPassword('');
-      alert('Password changed successfully');
-    } catch (err: any) {
-      alert(`Error: ${err.message}`);
-    }
-  };
-
   const handleSubmitApproval = async () => {
     if (!companyName.trim() || !regNumber.trim() || !contactEmail.trim()) {
       alert('Please fill in all required fields');
@@ -125,12 +110,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onOpenWalletSettings, onOpenC
   };
 
   const accountRows: { icon: React.ReactNode; label: string; sub: string; onClick: () => void; badge?: string }[] = [
-    { icon: <Icon.User />, label: 'Edit profile', sub: 'Name, username, bio', onClick: openEditProfile },
-    { icon: <Icon.Shield />, label: 'Security', sub: twoFactorEnabled ? '2FA enabled' : 'Manage password & 2FA', onClick: () => setCurrentPage('security') },
-    { icon: <Icon.Wallet />, label: 'Crypto wallets', sub: 'Connect Phantom & Solflare', onClick: onOpenCryptoWallets },
-    { icon: <Icon.CRM />, label: 'Marki Wallet', sub: 'Custodial · Verified', onClick: onOpenWalletSettings },
-    { icon: <Icon.Globe />, label: 'Company approval', sub: currentUser.companyApproved ? 'Verified' : currentUser.pendingApproval ? 'Pending review' : 'Submit a request', onClick: () => setCurrentPage('company') },
-    { icon: <Icon.Scan />, label: 'QR Scanner', sub: 'Сканировать QR-код камерой', onClick: () => setCurrentPage('qr-scanner') },
+    { icon: <Icon.User />, label: t('editProfile'), sub: t('editProfileSub'), onClick: openEditProfile },
+    { icon: <Icon.Wallet />, label: t('myNfts'), sub: t('myNftsSub'), onClick: onOpenNftWallet },
+    { icon: <Icon.Shield />, label: t('security'), sub: t('inDevelopment'), onClick: () => setCurrentPage('security') },
+    { icon: <Icon.Wallet />, label: t('cryptoWallets'), sub: t('cryptoWalletsSub'), onClick: onOpenCryptoWallets },
+    { icon: <Icon.CRM />, label: t('markiWallet'), sub: t('markiWalletSub'), onClick: onOpenWalletSettings },
+    { icon: <Icon.Globe />, label: t('companyApproval'), sub: currentUser.companyApproved ? t('verified') : currentUser.pendingApproval ? 'Pending review' : 'Submit a request', onClick: () => setCurrentPage('company') },
+    { icon: <Icon.Scan />, label: t('qrScanner'), sub: t('qrScannerSub'), onClick: () => setCurrentPage('qr-scanner') },
   ];
 
   return (
@@ -143,14 +129,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onOpenWalletSettings, onOpenC
         onChange={handleAvatarChange}
       />
 
+      <h1 className="hero-title" style={{ marginBottom: 16 }}>{language === 'uk' ? <>Мій<br /><span className="accent">Профіль</span></> : <>My<br /><span className="accent">Profile</span></>}</h1>
+
       {/* Header card */}
       <div
         style={{
           padding: 20,
-          borderRadius: 20,
+          borderRadius: 24,
           background: 'linear-gradient(135deg, var(--bg-card), var(--primary-faint))',
           border: '1px solid var(--border)',
           marginBottom: 16,
+          boxShadow: 'var(--shadow-md)',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -249,6 +238,45 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onOpenWalletSettings, onOpenC
         )}
       </div>
 
+      <div className="card" style={{ padding: 16, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{t('language')}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{t('interfacePreference')}</div>
+          </div>
+          <select value={language} onChange={e => setLanguage(e.target.value as Language)} aria-label="Language" style={{ background: 'var(--bg-soft)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontWeight: 700 }}>
+            <option value="en">English</option>
+            <option value="uk">Українська</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="card" style={{ padding: 16, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{t('brandRating')}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{t('overallByCategory')}</div>
+          </div>
+          <div style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>
+            {currentUser.ratingOverall ? currentUser.ratingOverall.toFixed(1) : 'N/A'}
+          </div>
+        </div>
+        {([
+          ['Authenticity', t('authenticity')],
+          ['Product quality', t('productQuality')],
+          ['Delivery', t('delivery')],
+          ['Communication', t('communication')],
+        ] as const).map(([category, label]) => {
+          const value = currentUser.ratingByCategory?.[category] || 0;
+          return <div key={category} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 28px', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 12 }}>
+            <span style={{ color: 'var(--text-muted)' }}>{label}</span>
+            <div style={{ height: 7, borderRadius: 4, background: 'var(--bg-soft)', overflow: 'hidden' }}><div style={{ height: '100%', width: `${value * 20}%`, background: 'var(--primary)', borderRadius: 4 }} /></div>
+            <strong>{value ? value.toFixed(1) : '-'}</strong>
+          </div>;
+        })}
+        {!currentUser.ratingOverall && <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 12 }}>{t('ratingsAfterTransactions')}</div>}
+      </div>
+
       {/* Account list */}
       <div
         className="mono"
@@ -268,6 +296,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onOpenWalletSettings, onOpenC
           <div
             key={row.label}
             onClick={row.onClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={event => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                row.onClick();
+              }
+            }}
             style={{
               padding: '14px 16px',
               display: 'flex',
@@ -352,67 +388,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onOpenWalletSettings, onOpenC
             >
               <Icon.ArrowLeft />
             </button>
-            <h2 className="h2">Security</h2>
+            <h2 className="h2">{t('security')}</h2>
           </div>
 
-          <div className="card" style={{ padding: 20, marginBottom: 14 }}>
-            <h3 className="h3" style={{ marginBottom: 14 }}>Change password</h3>
-            {[
-              { label: 'New password', value: newPassword, setter: setNewPassword },
-              { label: 'Confirm password', value: confirmNewPassword, setter: setConfirmNewPassword },
-            ].map(f => (
-              <div className="field" key={f.label} style={{ marginBottom: 12 }}>
-                <label>{f.label}</label>
-                <input
-                  type="password"
-                  placeholder="••••••••••"
-                  value={f.value}
-                  onChange={e => f.setter(e.target.value)}
-                />
-              </div>
-            ))}
-            <button
-              className="btn btn-primary btn-block"
-              style={{ marginTop: 6 }}
-              onClick={changePassword}
-            >
-              Save changes
-            </button>
-          </div>
-
-          <div className="card" style={{ padding: 20 }}>
-            <h3 className="h3" style={{ marginBottom: 12 }}>Two-factor authentication</h3>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 14 }}>Enable 2FA</span>
-              <div
-                onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-                style={{
-                  width: 50,
-                  height: 28,
-                  borderRadius: 14,
-                  background: twoFactorEnabled ? 'var(--primary)' : 'var(--border-strong)',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  transition: 'background 0.3s',
-                }}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    width: 20,
-                    height: 20,
-                    background: 'white',
-                    borderRadius: '50%',
-                    top: 4,
-                    left: twoFactorEnabled ? 26 : 4,
-                    transition: 'left 0.3s',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                  }}
-                />
-              </div>
-            </div>
-            <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-              Adds an extra layer of security to your account.
+          <div className="card" style={{ padding: '48px 24px', textAlign: 'center' }}>
+            <div style={{ width: 56, height: 56, borderRadius: 18, margin: '0 auto 16px', display: 'grid', placeItems: 'center', background: 'var(--primary-soft)', color: 'var(--primary-ink)' }}><Icon.Shield size={28} /></div>
+            <h3 className="h3">{t('inDevelopment')}</h3>
+            <p className="muted" style={{ fontSize: 13, lineHeight: 1.6, marginTop: 8 }}>
+              {language === 'uk' ? 'Налаштування пароля та двофакторної автентифікації з’являться в наступному оновленні.' : 'Password and two-factor authentication settings will be available in a future update.'}
             </p>
           </div>
         </div>

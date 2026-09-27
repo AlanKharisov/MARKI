@@ -1,6 +1,6 @@
 import { auth } from './firebase';
 
-const BASE_URL = (import.meta.env.VITE_API_URL as string) || 'https://idenity-backend.duckdns.org';
+const BASE_URL = (import.meta.env.VITE_API_URL as string) || 'https://idenity.onrender.com';
 
 async function token(): Promise<string> {
   const t = await auth.currentUser?.getIdToken();
