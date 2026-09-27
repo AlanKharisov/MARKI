@@ -106,6 +106,8 @@ pub async fn register(
         pending_approval: false,
         roles: Vec::new(),
         company_id: None,
+        rating_overall: 0.0,
+        rating_by_category: std::collections::HashMap::new(),
         banned: false,
         company_name: None,
         registration_number: None,

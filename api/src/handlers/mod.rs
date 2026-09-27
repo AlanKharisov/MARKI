@@ -9,4 +9,5 @@ pub mod notifications;
 pub mod nfts;
 pub mod posts;
 pub mod profile;
+pub mod users;
 pub mod wallets;

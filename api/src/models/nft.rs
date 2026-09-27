@@ -44,6 +44,9 @@ pub struct Nft {
     pub batch_index: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub batch_size: Option<u32>,
+    /// PNG QR code (Firebase Storage URL) that opens the public NFT viewer.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub qr_image_url: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -114,6 +117,22 @@ pub struct TransferNftRequest {
     pub payer_address: String,
     /// Short-lived server quote that fixes the exact SOL amount.
     pub quote_id: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerifyNftRequest {
+    pub nft_id: String,
+    pub owner_id: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerifyNftResponse {
+    pub issued_by_idenity: bool,
+    pub issuer_verified: bool,
+    pub issuer_name: String,
+    pub nft: Nft,
 }
 
 /// Body for `POST /api/nfts/:id/payment-quote`.

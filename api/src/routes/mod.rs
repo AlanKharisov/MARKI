@@ -7,7 +7,7 @@ use axum::{
 use std::sync::Arc;
 
 use crate::{
-    handlers::{admin, ai, auth, cod_orders, deliveries, marketplace, nfc, notifications, nfts, posts, profile, wallets},
+    handlers::{admin, ai, auth, cod_orders, deliveries, marketplace, nfc, notifications, nfts, posts, profile, users, wallets},
     middleware::auth::auth_middleware,
     AppState,
 };
@@ -28,6 +28,8 @@ pub fn api_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/profile/:uid/password", put(profile::change_password))
         .route("/profile/:uid/approval", put(profile::set_approval))
         .route("/profile/:uid/request-approval", post(profile::request_approval))
+        // Users
+        .route("/users/search", get(users::search_users))
         // Marki wallet
         .route("/wallets/marki", get(wallets::get_marki_wallet))
         .route("/wallets/marki/fingerprint", put(wallets::update_fingerprint))
@@ -49,11 +51,15 @@ pub fn api_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
                 .layer(DefaultBodyLimit::max(100 * 1024 * 1024)))  // 100 MB for batch
             .route("/editions",  post(nfts::create_edition_nfts)   // static — must stay above /:id
                 .layer(DefaultBodyLimit::max(20 * 1024 * 1024)))   // 20 MB image
+            .route("/verify",       post(nfts::verify_nft))
+            .route("/qr-missing",   post(nfts::generate_missing_qr))    // static — above /:id
+            .route("/regenerate-qr", post(nfts::regenerate_all_qr))
             .route("/:id",          get(nfts::get_nft))
             .route("/:id",          put(nfts::update_nft))
             .route("/:id",          delete(nfts::delete_nft))
             .route("/:id/payment-quote", post(nfts::create_payment_quote))
             .route("/:id/transfer", post(nfts::transfer_nft))
+            .route("/:id/qr",       post(nfts::generate_nft_qr))
         )
         // Posts / feed
         .route("/posts", get(posts::get_posts))
