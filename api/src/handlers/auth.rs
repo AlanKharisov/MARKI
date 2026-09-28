@@ -108,6 +108,11 @@ pub async fn register(
         company_id: None,
         rating_overall: 0.0,
         rating_by_category: std::collections::HashMap::new(),
+        followers_count: 0,
+        following_count: 0,
+        likes_count: 0,
+        saved_posts: Vec::new(),
+        reposted_posts: Vec::new(),
         banned: false,
         company_name: None,
         registration_number: None,
@@ -187,8 +192,10 @@ pub async fn me(
         .map_err(|e| AppError::Firebase(e.to_string()))?
         .ok_or_else(|| AppError::NotFound("User profile not found".to_owned()))?;
 
-    let user_data: UserData =
+    let mut user_data: UserData =
         serde_json::from_value(doc).map_err(|e| AppError::Internal(e.into()))?;
+
+    user_data.likes_count = crate::handlers::users::likes_count_for_user(&state, &user.uid).await?;
 
     Ok(Json(user_data))
 }

@@ -30,6 +30,12 @@ pub fn api_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/profile/:uid/request-approval", post(profile::request_approval))
         // Users
         .route("/users/search", get(users::search_users))
+        .route("/users/me/saved", get(users::saved_posts))
+        .route("/users/me/reposts", get(users::reposted_posts))
+        .route("/users/me/likes", get(users::liked_posts))
+        .route("/users/:uid/follow", post(users::follow_user))
+        .route("/users/:uid/follow", delete(users::unfollow_user))
+        .route("/users/:uid", get(users::get_public_profile))
         // Marki wallet
         .route("/wallets/marki", get(wallets::get_marki_wallet))
         .route("/wallets/marki/fingerprint", put(wallets::update_fingerprint))
@@ -66,6 +72,8 @@ pub fn api_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/posts", post(posts::create_post))
         .route("/posts/:id", delete(posts::delete_post))
         .route("/posts/:id/like", post(posts::like_post))
+        .route("/posts/:id/save", post(users::toggle_saved_post))
+        .route("/posts/:id/repost", post(users::toggle_reposted_post))
         .route("/posts/:id/comments", post(posts::add_comment))
         // Marketplace
         .route("/marketplace/buy", post(marketplace::buy_nft))

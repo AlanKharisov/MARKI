@@ -108,6 +108,7 @@ pub async fn create_post(
         description: body.description,
         tags: body.tags,
         likes: 0,
+        reposts: 0,
         liked_by: vec![],
         comments: vec![],
         created_at: Utc::now().to_rfc3339(),
