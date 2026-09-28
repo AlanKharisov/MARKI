@@ -7,7 +7,7 @@ use axum::{
 use std::sync::Arc;
 
 use crate::{
-    handlers::{admin, ai, auth, cod_orders, deliveries, marketplace, nfc, notifications, nfts, posts, profile, users, wallets},
+    handlers::{admin, ai, auth, cod_orders, deliveries, marketplace, nfc, notifications, nfts, posts, profile, public, users, wallets},
     middleware::auth::auth_middleware,
     AppState,
 };
@@ -33,6 +33,7 @@ pub fn api_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/users/me/saved", get(users::saved_posts))
         .route("/users/me/reposts", get(users::reposted_posts))
         .route("/users/me/likes", get(users::liked_posts))
+        .route("/users/me/analytics", get(public::analytics))
         .route("/users/:uid/follow", post(users::follow_user))
         .route("/users/:uid/follow", delete(users::unfollow_user))
         .route("/users/:uid", get(users::get_public_profile))
@@ -115,6 +116,11 @@ pub fn api_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
     // ── Public routes (no auth required) ─────────────────────────────────────
     let public = Router::new()
         .route("/auth/register", post(auth::register))
+        .route("/public/users/:username", get(public::get_profile))
+        .route("/public/users/:username/nfts", get(public::get_user_nfts))
+        .route("/public/users/:username/view", post(public::view_profile))
+        .route("/public/nfts/:owner_id/:nft_id", get(public::get_passport))
+        .route("/public/nfts/:owner_id/:nft_id/view", post(public::view_passport))
         .route("/ai/generate",   post(ai::generate_image));
 
     Router::new().merge(protected).merge(public)

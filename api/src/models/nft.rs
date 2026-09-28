@@ -19,6 +19,8 @@ pub struct Nft {
     pub for_sale: bool,
     pub currency: Option<String>,
     pub created_at: String,
+    #[serde(default)]
+    pub views: u64,
     /// Off-chain Metaplex metadata JSON URL (set at creation time).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata_uri: Option<String>,
