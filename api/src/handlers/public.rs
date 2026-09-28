@@ -93,6 +93,19 @@ fn parse_nfts(doc: &Value) -> Vec<Nft> {
         .unwrap_or_default()
 }
 
+/// Passport views live in the wallet's `nftViews` map (nft id -> count), not in
+/// the `nfts` array: a public view must never rewrite the owner's NFT list, or a
+/// view racing with an owner edit could drop that edit. `views` on older records
+/// is kept as a floor.
+pub fn nft_views(wallet: &Value, nft: &Nft) -> u64 {
+    wallet
+        .get("nftViews")
+        .and_then(|m| m.get(&nft.id))
+        .and_then(Value::as_u64)
+        .unwrap_or(0)
+        .max(nft.views)
+}
+
 fn find_nft(nfts: &[Nft], nft_id: &str, owner_id: &str) -> Option<Nft> {
     nfts.iter()
         .find(|n| n.id == nft_id && n.owner_id == owner_id)
@@ -180,6 +193,7 @@ pub async fn get_user_nfts(
     let mut nfts: Vec<PublicNft> = parse_nfts(&wallet)
         .into_iter()
         .map(|nft| PublicNft {
+            views: nft_views(&wallet, &nft),
         has_nfc: nfc_bindings
             .and_then(|m| m.get(&nft.id))
             .map(|v| v.as_str().map(|s| !s.is_empty()).unwrap_or(!v.is_null()))
@@ -189,7 +203,6 @@ pub async fn get_user_nfts(
             image: nft.image,
             batch_name: nft.batch_name,
             created_at: nft.created_at,
-            views: nft.views,
         })
         .collect();
     nfts.sort_by(|a, b| b.created_at.cmp(&a.created_at));
@@ -323,15 +336,18 @@ pub async fn view_passport(
         .await
         .map_err(|e| AppError::Firebase(e.to_string()))?
         .unwrap_or_else(|| json!({"nfts": []}));
-    let mut nfts = parse_nfts(&wallet);
-    let nft = nfts
-        .iter_mut()
-        .find(|n| n.id == nft_id && n.owner_id == owner_id)
+    let nft = find_nft(&parse_nfts(&wallet), &nft_id, &owner_id)
         .ok_or_else(|| AppError::NotFound("This QR is not registered by Idenity".into()))?;
-    nft.views = nft.views.saturating_add(1);
+    // Field-mask update of the `nftViews` map only; the `nfts` array is untouched.
+    let mut views = wallet
+        .get("nftViews")
+        .and_then(Value::as_object)
+        .cloned()
+        .unwrap_or_default();
+    views.insert(nft.id.clone(), json!(nft_views(&wallet, &nft).saturating_add(1)));
     state
         .firestore
-        .update("marki_wallets", &owner_id, &json!({"nfts": nfts}))
+        .update("marki_wallets", &owner_id, &json!({"nftViews": views}))
         .await
         .map_err(|e| AppError::Firebase(e.to_string()))?;
     increment_view(&state, "marki_wallets", &owner_id, "passportViews").await?;
@@ -371,12 +387,13 @@ pub async fn analytics(
         .collect();
     let top_passports = parse_nfts(&wallet)
         .into_iter()
-        .filter(|n| n.views > 0)
-        .map(|n| TopPassport {
+        .map(|n| (nft_views(&wallet, &n), n))
+        .filter(|(views, _)| *views > 0)
+        .map(|(views, n)| TopPassport {
             id: n.id,
             title: n.title,
             image: n.image,
-            views: n.views,
+            views,
         })
         .collect::<Vec<_>>();
     let mut top_passports = top_passports;
@@ -394,7 +411,8 @@ pub async fn analytics(
 
 #[cfg(test)]
 mod tests {
-    use super::{last_30_days, sum_buckets};
+    use super::{last_30_days, sum_buckets, nft_views};
+    use crate::models::Nft;
     use chrono::NaiveDate;
     use serde_json::json;
 
@@ -408,5 +426,18 @@ mod tests {
         let buckets = json!({"2026-08-30": 4, "2026-09-28": 3, "2026-07-01": 100});
         assert_eq!(sum_buckets(Some(&buckets), &dates), 7);
         assert_eq!(sum_buckets(None, &dates), 0);
+    }
+
+    #[test]
+    fn nft_views_reads_map_and_keeps_legacy_floor() {
+        let mut nft: Nft = serde_json::from_value(serde_json::json!({
+            "id": "a", "title": "t", "description": "", "image": "", "ownerId": "o",
+            "ownerName": "", "createdAt": "", "views": 3
+        })).unwrap();
+        let wallet = serde_json::json!({ "nftViews": { "a": 10 } });
+        assert_eq!(nft_views(&wallet, &nft), 10);
+        nft.views = 12;
+        assert_eq!(nft_views(&wallet, &nft), 12);
+        assert_eq!(nft_views(&serde_json::json!({}), &nft), 12);
     }
 }

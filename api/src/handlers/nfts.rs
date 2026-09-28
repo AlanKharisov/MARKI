@@ -150,7 +150,20 @@ pub async fn get_nfts(
     State(state): State<Arc<AppState>>,
     Extension(auth): Extension<AuthenticatedUser>,
 ) -> ApiResult<Json<Vec<Nft>>> {
-    let nfts = load_nfts(&state, &auth.uid).await?;
+    let wallet = state
+        .firestore
+        .get("marki_wallets", &auth.uid)
+        .await
+        .map_err(|e| AppError::Firebase(e.to_string()))?
+        .unwrap_or_else(|| json!({}));
+    let mut nfts: Vec<Nft> = wallet
+        .get("nfts")
+        .and_then(|v| serde_json::from_value(v.clone()).ok())
+        .unwrap_or_default();
+    // Views are counted outside the array; see public::nft_views.
+    for n in nfts.iter_mut() {
+        n.views = crate::handlers::public::nft_views(&wallet, n);
+    }
     Ok(Json(nfts))
 }
 
