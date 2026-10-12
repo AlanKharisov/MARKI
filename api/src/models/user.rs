@@ -24,6 +24,21 @@ pub struct UserData {
     /// uid of the company-owner this user reports to (when role is courier/manager/controller).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub company_id: Option<String>,
+    #[serde(default)]
+    pub rating_overall: f64,
+    #[serde(default)]
+    pub rating_by_category: std::collections::HashMap<String, f64>,
+
+    #[serde(default)]
+    pub followers_count: u64,
+    #[serde(default)]
+    pub following_count: u64,
+    #[serde(default)]
+    pub likes_count: u64,
+    #[serde(default)]
+    pub saved_posts: Vec<String>,
+    #[serde(default)]
+    pub reposted_posts: Vec<String>,
 
     // ── Company application + admin moderation ───────────────────────────────
     #[serde(default)]
@@ -49,6 +64,42 @@ pub struct UserData {
     pub rejection_reason: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ban_reason: Option<String>,
+}
+
+/// Public profile fields returned by `GET /api/users/search`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PublicUser {
+    pub uid: String,
+    pub name: String,
+    pub username: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub avatar: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bio: Option<String>,
+    pub company_approved: bool,
+}
+
+/// Public profile fields returned by `GET /api/users/:uid`.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PublicProfile {
+    pub uid: String,
+    pub name: String,
+    pub username: String,
+    pub avatar: Option<String>,
+    pub bio: Option<String>,
+    pub company_approved: bool,
+    pub followers_count: u64,
+    pub following_count: u64,
+    pub likes_count: u64,
+    pub is_following: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UserSearchQuery {
+    #[serde(default)]
+    pub q: String,
 }
 
 #[derive(Debug, Deserialize)]

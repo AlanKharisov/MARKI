@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
 import { Icon } from '../components/brand';
-import { apiVerifyNfc, apiGetNFT } from '../services/apiClient';
+import { apiVerifyNfc, apiGetNFT, apiVerifyNFT } from '../services/apiClient';
+import { useLanguage } from '../context/LanguageContext';
 
 interface QrScannerPageProps {
     onClose: () => void;
@@ -18,6 +19,7 @@ interface NFTData {
     price?: number;
     currency?: string;
     userId?: string;
+    ownerId?: string;
     mintAddress?: string;
     metadataUri?: string;
     nfcUid?: string;
@@ -28,9 +30,10 @@ interface NFTData {
     createdAt?: string;
 }
 
-type ScanSource = { kind: 'nft'; nftId: string } | { kind: 'nfc'; uid: string } | null;
+type ScanSource = { kind: 'nft'; nftId: string; ownerId?: string; idenityPayload?: boolean } | { kind: 'nfc'; uid: string } | null;
 
 const QrScannerPage: React.FC<QrScannerPageProps> = ({ onClose }) => {
+    const { t } = useLanguage();
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -48,6 +51,9 @@ const QrScannerPage: React.FC<QrScannerPageProps> = ({ onClose }) => {
     const [loadingNft, setLoadingNft] = useState(false);
     const [nftError, setNftError] = useState<string | null>(null);
     const [scanVerified, setScanVerified] = useState(false);
+    const [issuedByIdenity, setIssuedByIdenity] = useState(false);
+    const [issuerVerified, setIssuerVerified] = useState(false);
+    const [issuerName, setIssuerName] = useState<string | null>(null);
 
     const stopCamera = useCallback(() => {
         if (animFrameRef.current) { cancelAnimationFrame(animFrameRef.current); animFrameRef.current = 0; }
@@ -67,11 +73,11 @@ const QrScannerPage: React.FC<QrScannerPageProps> = ({ onClose }) => {
             if (videoRef.current) { videoRef.current.srcObject = stream; await videoRef.current.play(); }
         } catch (e: any) {
             if (e.name === 'AbortError') return;
-            if (e.name === 'NotAllowedError') setError('Camera access denied. Please allow access in settings.');
-            else if (e.name === 'NotFoundError') setError('Camera not found on this device.');
+            if (e.name === 'NotAllowedError') setError(t('cameraDenied'));
+            else if (e.name === 'NotFoundError') setError(t('cameraNotFound'));
             else setError(`Camera error: ${e.message}`);
         }
-    }, []);
+    }, [t]);
 
     const parseQr = useCallback((raw: string): ScanSource => {
         // JSON with nftId or collection
@@ -79,11 +85,11 @@ const QrScannerPage: React.FC<QrScannerPageProps> = ({ onClose }) => {
             const p = JSON.parse(raw);
             // Collection QR — use first item's nftId to show collection data
             if (p.type === 'collection' && p.itemIds?.length > 0) {
-                return { kind: 'nft', nftId: p.itemIds[0] };
+                return { kind: 'nft', nftId: p.itemIds[0], ownerId: p.ownerId, idenityPayload: p.issuer === 'idenity' };
             }
             // Single NFT QR (from collection item or standalone)
             if (p.type === 'nft' && (p.id || p.collectionId)) {
-                return { kind: 'nft', nftId: p.id || p.collectionId };
+                return { kind: 'nft', nftId: p.id || p.collectionId, ownerId: p.ownerId, idenityPayload: p.issuer === 'idenity' };
             }
             if (p.nftId || p.id) return { kind: 'nft', nftId: p.nftId || p.id };
         } catch { /* not JSON */ }
@@ -95,10 +101,12 @@ const QrScannerPage: React.FC<QrScannerPageProps> = ({ onClose }) => {
             const url = new URL(raw);
             const nfc = url.searchParams.get('nfc');
             const nftParam = url.searchParams.get('nft');
+            const ownerId = url.searchParams.get('owner') || undefined;
+            const idenityPayload = url.searchParams.get('issuer') === 'idenity';
             const pathMatch = url.pathname.match(/\/nft\/([^\/]+)/);
             if (nfc) return { kind: 'nfc', uid: nfc };
-            if (nftParam) return { kind: 'nft', nftId: nftParam };
-            if (pathMatch) return { kind: 'nft', nftId: pathMatch[1] };
+            if (nftParam) return { kind: 'nft', nftId: nftParam, ownerId, idenityPayload };
+            if (pathMatch) return { kind: 'nft', nftId: pathMatch[1], ownerId, idenityPayload };
         } catch { /* not URL */ }
         return null;
     }, []);
@@ -148,10 +156,24 @@ const QrScannerPage: React.FC<QrScannerPageProps> = ({ onClose }) => {
             setNft(null);
             setOwnerName(null);
             setScanVerified(false);
+            setIssuedByIdenity(false);
+            setIssuerVerified(false);
+            setIssuerName(null);
             try {
                 if (source.kind === 'nft') {
-                    const data = await apiGetNFT(source.nftId);
-                    if (!cancelled) setNft(data);
+                    if (source.idenityPayload && source.ownerId) {
+                        const result = await apiVerifyNFT({ nftId: source.nftId, ownerId: source.ownerId });
+                        if (!cancelled) {
+                            setNft(result.nft);
+                            setIssuedByIdenity(result.issuedByIdenity);
+                            setIssuerVerified(result.issuerVerified);
+                            setIssuerName(result.issuerName);
+                            setScanVerified(result.issuedByIdenity);
+                        }
+                    } else {
+                        const data = await apiGetNFT(source.nftId);
+                        if (!cancelled) setNft(data);
+                    }
                 } else {
                     const verified = await apiVerifyNfc(source.uid);
                     if (!cancelled) {
@@ -178,6 +200,7 @@ const QrScannerPage: React.FC<QrScannerPageProps> = ({ onClose }) => {
 
     const rescan = () => {
         setSource(null); setNft(null); setNftError(null); setOwnerName(null); setScanVerified(false);
+        setIssuedByIdenity(false); setIssuerVerified(false); setIssuerName(null);
         setScanning(true);
     };
 
@@ -194,7 +217,7 @@ const QrScannerPage: React.FC<QrScannerPageProps> = ({ onClose }) => {
                     <button onClick={() => { stopCamera(); onClose(); }} style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,0.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }} aria-label="Close">
                         <Icon.ArrowLeft size={20} />
                     </button>
-                    <h2 style={{ fontSize: 17, fontWeight: 700, color: '#fff', margin: 0 }}>QR Scanner</h2>
+                    <h2 style={{ fontSize: 17, fontWeight: 700, color: '#fff', margin: 0 }}>{t('qrScanner')}</h2>
                     <div style={{ width: 38 }} />
                 </div>
 
@@ -220,7 +243,7 @@ const QrScannerPage: React.FC<QrScannerPageProps> = ({ onClose }) => {
 
                     {/* Bottom */}
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 20px 40px', background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                        <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>Point your camera at a QR code</div>
+                        <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>{t('pointCamera')}</div>
                         {hasTorch && (
                             <button onClick={toggleTorch} style={{ padding: '10px 20px', borderRadius: 999, background: torchOn ? '#10b981' : 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', fontWeight: 600, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer' }}>
                                 💡 {torchOn ? 'Turn Off' : 'Flashlight'}
@@ -284,17 +307,30 @@ const QrScannerPage: React.FC<QrScannerPageProps> = ({ onClose }) => {
 
                 {!loadingNft && !nftError && nft && (
                     <>
-                        {/* Authentic Banner */}
-                        {scanVerified ? (
-                            <div style={{ background: 'var(--primary, #10b981)', color: '#fff', padding: '12px 16px', borderRadius: 12, marginBottom: 20, textAlign: 'center', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 12px rgba(16,185,129,0.2)' }}>
-                                <Icon.Check size={20} />
-                                VERIFIED AUTHENTIC
+                        {/* Verification summary */}
+                        <div style={{ background: issuedByIdenity ? 'var(--primary-faint)' : 'rgba(217,119,6,.09)', border: `1px solid ${issuedByIdenity ? 'var(--primary-soft)' : 'rgba(217,119,6,.25)'}`, padding: 16, borderRadius: 16, marginBottom: 20 }}>
+                            <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontWeight: 800, color: issuedByIdenity ? 'var(--primary-ink)' : 'var(--warn)', marginBottom: 10 }}>
+                                {issuedByIdenity ? <Icon.Check size={20} /> : <Icon.Shield size={20} />}
+                                {issuedByIdenity ? t('issuedByIdenity') : t('originNotVerified')}
                             </div>
-                        ) : source?.kind === 'nft' ? (
-                            <div style={{ background: 'var(--bg-soft)', color: 'var(--text-muted)', padding: '12px 16px', borderRadius: 12, marginBottom: 20, textAlign: 'center', fontWeight: 600, fontSize: 14 }}>
-                                NFT Data (Unverified Item)
+                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13, padding: '8px 0', borderTop: '1px solid var(--border)' }}>
+                                <span style={{ color: 'var(--text-muted)' }}>{t('brandWallet')}</span>
+                                <strong style={{ color: issuerVerified ? 'var(--primary)' : 'var(--warn)', textAlign: 'right' }}>
+                                    {issuerVerified ? t('verified') : t('notVerified')}
+                                </strong>
                             </div>
-                        ) : null}
+                            {issuerName && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('issuer')}: {issuerName}</div>}
+                            {!issuerVerified && issuedByIdenity && (
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 8 }}>
+                                    The NFT exists in Idenity, but the issuing brand has not completed company verification.
+                                </div>
+                            )}
+                            {!issuedByIdenity && source?.kind === 'nft' && (
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 8 }}>
+                                    This is a legacy or external QR. Do not treat it as proof of authenticity.
+                                </div>
+                            )}
+                        </div>
 
                         {/* Image */}
                         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 18, overflow: 'hidden', maxWidth: 240, aspectRatio: '1 / 1', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

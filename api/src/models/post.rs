@@ -26,6 +26,8 @@ pub struct Post {
     #[serde(default)]
     pub likes: i64,
     #[serde(default)]
+    pub reposts: i64,
+    #[serde(default)]
     pub liked_by: Vec<String>,
     #[serde(default)]
     pub comments: Vec<Comment>,

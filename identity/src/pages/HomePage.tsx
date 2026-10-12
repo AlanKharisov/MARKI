@@ -4,14 +4,13 @@ import { usePosts } from '../hooks/usePosts';
 import { useAuth } from '../context/AuthContext';
 import BuyModal from './BuyModal';
 import HistoryView from './HistoryView';
-import { useViewHistory } from '../hooks/useViewHistory';
+import { getHistory, useViewHistory } from '../hooks/useViewHistory';
 import { Icon } from '../components/brand';
+import { useLanguage } from '../context/LanguageContext';
 
 const DEFAULT_AVATAR = '/img/default-avatar.png';
 
-const FILTER_OPTIONS = [
-  'All', 'For Sale', 'New', 'Art', 'Music',
-];
+const FILTER_OPTIONS = ['recommendations', 'mine', 'viewed', 'sale'] as const;
 
 function HistoryIcon({ size = 18 }: { size?: number }) {
   return (
@@ -92,6 +91,7 @@ function CollectionGallery({ images, title }: { images: string[]; title: string 
 const HomePage: React.FC = () => {
   const { posts, loading, likePost, addComment, refreshPosts } = usePosts();
   const { currentUser } = useAuth();
+  const { language } = useLanguage();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [newComment, setNewComment] = useState<Record<string, string>>({});
@@ -99,7 +99,7 @@ const HomePage: React.FC = () => {
   const [buyNft, setBuyNft] = useState<any | null>(null);
 
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeFilter, setActiveFilter] = useState<typeof FILTER_OPTIONS[number]>('recommendations');
   const filterRef = useRef<HTMLDivElement>(null);
 
   const { attachObserver } = useViewHistory();
@@ -114,14 +114,10 @@ const HomePage: React.FC = () => {
         post.tags?.some(tag => tag.toLowerCase().includes(q))
       );
       let matchesFilter = true;
-      if (activeFilter === 'For Sale') matchesFilter = !!post.forSale;
-      else if (activeFilter === 'New') matchesFilter = true;
-      else if (activeFilter !== 'All') matchesFilter = post.category === activeFilter;
+      if (activeFilter === 'mine') matchesFilter = post.userId === currentUser?.uid;
+      else if (activeFilter === 'viewed') matchesFilter = getHistory().includes(post.id);
+      else if (activeFilter === 'sale') matchesFilter = !!post.forSale;
       return matchesSearch && matchesFilter;
-    })
-    .sort((a, b) => {
-      if (activeFilter !== 'New') return 0;
-      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
     });
 
   const handleLike = async (post: any) => {
@@ -140,10 +136,10 @@ const HomePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="page home-page active mi-screen-pad" style={{ paddingTop: 60 }}>
-        <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+      <div className="page home-page active mi-screen-pad" style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', paddingBottom: 100 }}>
+        <div style={{ textAlign: 'center' }}>
           <div className="spinner" style={{ margin: '0 auto 15px' }} />
-          <p className="muted">Loading NFTs…</p>
+          <p className="muted">{language === 'uk' ? 'Завантаження NFT…' : 'Loading NFTs…'}</p>
         </div>
       </div>
     );
@@ -153,49 +149,32 @@ const HomePage: React.FC = () => {
     <div className="page home-page active mi-screen-pad" style={{ paddingTop: 18, paddingBottom: 148 }}>
       {/* Marketplace header */}
       <div style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <h1 className="h2" style={{ fontSize: 26, letterSpacing: '-0.03em' }}>Marketplace</h1>
-            <p style={{ margin: '5px 0 0', color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.45 }}>
-              Discover, collect, and trade verified digital items.
-            </p>
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+          <h1 className="hero-title">Market<br /><span className="accent">place</span></h1>
           <button
             onClick={() => setHistoryOpen(true)}
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 14,
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              boxShadow: 'var(--shadow-sm)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              color: 'var(--text)',
-              flex: '0 0 auto',
-            }}
+            className="icon-btn-round"
             aria-label="View history"
           >
-            <HistoryIcon size={19} />
+            <HistoryIcon size={18} />
           </button>
         </div>
         <div
           style={{
             marginTop: 16,
-            background: 'var(--bg-soft)',
-            border: '1px solid var(--border)',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-strong)',
             borderRadius: 16,
-            padding: '12px 14px',
+            padding: '13px 14px',
             display: 'flex',
             alignItems: 'center',
             gap: 10,
             color: 'var(--text-faint)',
-            fontSize: 14,
+            fontSize: 13.5,
+            boxShadow: 'var(--shadow-sm)',
           }}
         >
-          <Icon.Search size={18} />
+          <Icon.Search size={17} />
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
@@ -206,7 +185,7 @@ const HomePage: React.FC = () => {
               outline: 'none',
               background: 'transparent',
               color: 'var(--text)',
-              fontSize: 14,
+              fontSize: 13.5,
               padding: 0,
             }}
           />
@@ -220,17 +199,10 @@ const HomePage: React.FC = () => {
             key={opt}
             onClick={() => setActiveFilter(opt)}
             className={`chip ${activeFilter === opt ? 'chip-active' : ''}`}
-            style={{
-              padding: '8px 13px',
-              fontSize: 13,
-              fontWeight: activeFilter === opt ? 800 : 650,
-              background: activeFilter === opt ? 'var(--primary)' : 'var(--bg-card)',
-              color: activeFilter === opt ? 'white' : 'var(--text-muted)',
-              borderColor: activeFilter === opt ? 'var(--primary)' : 'var(--border)',
-              boxShadow: activeFilter === opt ? '0 8px 18px rgba(12,90,68,0.16)' : 'var(--shadow-sm)',
-            }}
           >
-            {opt}
+            {language === 'uk'
+              ? ({ recommendations: 'Рекомендації', mine: 'Мої', viewed: 'Переглянуті', sale: 'На продаж' } as const)[opt]
+              : ({ recommendations: 'Recommendations', mine: 'My', viewed: 'Viewed', sale: 'For sale' } as const)[opt]}
           </span>
         ))}
       </div>
@@ -334,9 +306,6 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <button style={{ color: 'var(--text-faint)', padding: 4, flex: '0 0 auto' }} aria-label="More">
-                    <Icon.More />
-                  </button>
                 </div>
 
                 <div
@@ -351,16 +320,16 @@ const HomePage: React.FC = () => {
                   }}
                 >
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 700, textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: 10, color: 'var(--text-faint)', fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase' }}>
                       {post.forSale && post.price ? 'Price' : 'Status'}
                     </div>
                     <div
-                      className={post.forSale && post.price ? 'mono' : undefined}
+                      className={post.forSale && post.price ? 'price' : undefined}
                       style={{
                         marginTop: 2,
-                        fontSize: 14,
-                        fontWeight: 800,
-                        color: post.forSale && post.price ? 'var(--primary-ink)' : 'var(--text-muted)',
+                        fontSize: post.forSale && post.price ? 20 : 14,
+                        fontWeight: post.forSale && post.price ? 700 : 800,
+                        color: post.forSale && post.price ? undefined : 'var(--text-muted)',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',

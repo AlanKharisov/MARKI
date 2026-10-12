@@ -67,7 +67,7 @@ Prerequisites:
 - AWS server public IP or DNS name.
 - SSH username, for example `ubuntu` or `ec2-user`.
 - External SSH private key path on your PC, for example `/path/outside/project/my-aws-key.pem`.
-- Production backend domain, for example `idenity-backend.duckdns.org`.
+- Production backend domain, for example `idenity.onrender.com`.
 
 Use the SSH key only from its external path:
 
@@ -184,7 +184,7 @@ Create `/etc/nginx/sites-available/idenity-api`:
 ```nginx
 server {
     listen 80;
-    server_name idenity-backend.duckdns.org;
+    server_name idenity.onrender.com;
 
     location / {
         proxy_pass http://127.0.0.1:8090;
@@ -208,7 +208,7 @@ sudo systemctl reload nginx
 Add HTTPS:
 
 ```bash
-sudo certbot --nginx -d idenity-backend.duckdns.org
+sudo certbot --nginx -d idenity.onrender.com
 ```
 
 ## GitHub Pages Deployment
@@ -228,14 +228,14 @@ cp .env.example .env.production
 Set production API URL:
 
 ```bash
-REACT_APP_API_URL=https://idenity-backend.duckdns.org
+REACT_APP_API_URL=https://idenity.onrender.com
 ```
 
 For `admin/` and `admin-company/`, use the matching Vite variable names if those apps are deployed later:
 
 ```bash
-VITE_API_URL=https://idenity-backend.duckdns.org
-VITE_API_BASE_URL=https://idenity-backend.duckdns.org
+VITE_API_URL=https://idenity.onrender.com
+VITE_API_BASE_URL=https://idenity.onrender.com
 VITE_SOLANA_RPC=https://api.devnet.solana.com
 ```
 
@@ -278,7 +278,7 @@ Backend:
 
 - `cargo build --release -p idenity-api`
 - `curl http://127.0.0.1:8090/health` works on the server.
-- `curl https://idenity-backend.duckdns.org/health` works externally.
+- `curl https://idenity.onrender.com/health` works externally.
 - `sudo systemctl status idenity-api` is healthy.
 - `sudo journalctl -u idenity-api -n 100` has no missing env errors.
 - Authenticated Firebase endpoints work with a real token.
@@ -288,7 +288,7 @@ Backend:
 Frontend:
 
 - `cd identity && npm run build`
-- Production bundle calls `https://idenity-backend.duckdns.org`, not `localhost:8090`.
+- Production bundle calls `https://idenity.onrender.com`, not `localhost:8090`.
 - GitHub Pages loads the app.
 - Refreshing nested routes works.
 - Firebase login works after authorized-domain setup.

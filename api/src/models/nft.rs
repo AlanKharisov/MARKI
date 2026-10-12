@@ -19,6 +19,8 @@ pub struct Nft {
     pub for_sale: bool,
     pub currency: Option<String>,
     pub created_at: String,
+    #[serde(default)]
+    pub views: u64,
     /// Off-chain Metaplex metadata JSON URL (set at creation time).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata_uri: Option<String>,
@@ -44,6 +46,14 @@ pub struct Nft {
     pub batch_index: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub batch_size: Option<u32>,
+    /// PNG QR code (Firebase Storage URL) that opens the public NFT viewer.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub qr_image_url: Option<String>,
+    /// Set on NFTs received as a gift: who gave it and which gift link.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gift_from: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gift_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -116,6 +126,22 @@ pub struct TransferNftRequest {
     pub quote_id: String,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerifyNftRequest {
+    pub nft_id: String,
+    pub owner_id: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerifyNftResponse {
+    pub issued_by_idenity: bool,
+    pub issuer_verified: bool,
+    pub issuer_name: String,
+    pub nft: Nft,
+}
+
 /// Body for `POST /api/nfts/:id/payment-quote`.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -129,8 +155,9 @@ pub struct PaymentQuoteRequest {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateEditionResponse {
-    /// Firestore ID of the master NFT record.
-    pub master_id:     String,
+    /// Firestore ID of the master NFT record. ICP has no master editions, so it is absent there.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub master_id:     Option<String>,
     /// Shared off-chain metadata URI (used for every on-chain mint).
     pub metadata_uri:  String,
     /// Firebase Storage URL of the uploaded image (used to create the feed post).

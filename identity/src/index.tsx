@@ -2,8 +2,16 @@ import './polyfills';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import './index.css';
 import App from './App';
+
+// GitHub Pages serves the production web build under /idenity; the native app
+// and the local dev server both live at the root.
+const routerBasename =
+    Capacitor.isNativePlatform() || process.env.NODE_ENV !== 'production'
+        ? '/'
+        : '/idenity';
 
 const restoreGitHubPagesPath = () => {
     const params = new URLSearchParams(window.location.search);
@@ -24,7 +32,7 @@ const root = ReactDOM.createRoot(
 );
 root.render(
     <React.StrictMode>
-        <BrowserRouter basename="/idenity">
+        <BrowserRouter basename={routerBasename}>
             <App />
         </BrowserRouter>
     </React.StrictMode>

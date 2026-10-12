@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { apiGetCryptoWallets, apiTransferNFT, apiCashOnDelivery } from '../services/apiClient';
-import { useUmi } from '../hooks/useUmi';
+import {
+    apiCashOnDelivery,
+    apiAddCryptoWallet,
+    apiGetCryptoWallets,
+    apiGetPaymentQuote,
+    apiTransferNFT,
+    PaymentQuote,
+} from '../services/apiClient';
+import {
+    connectPhantomWallet,
+    signAndSendPhantomTransaction,
+} from '../services/phantomWallet';
 
 // Solana cluster the on-chain transfer should hit. Must match the cluster
 // useUmi mints on (devnet by default) so wallets line up. Override with
@@ -16,48 +26,112 @@ interface BuyModalProps {
     onSuccess?: (boughtNft: any) => void;
 }
 
-const PLATFORM_FEE = 0.01; // 1%
-
 type PaymentMethod = 'crypto' | 'cod';
 
 const BuyModal: React.FC<BuyModalProps> = ({ nft, onClose, onSuccess }) => {
     const { currentUser } = useAuth();
+    const nftCurrency = String(nft.currency || 'SOL').toUpperCase();
+    const cryptoSupported = ['SOL', 'UAH', 'USD'].includes(nftCurrency);
     const [wallets, setWallets]                     = useState<any[]>([]);
     const [selectedWalletId, setSelectedWalletId]   = useState('');
     const [loading, setLoading]                     = useState(true);
+    const [quote, setQuote]                         = useState<PaymentQuote | null>(null);
+    const [quoteError, setQuoteError]               = useState('');
+    const [connectingWallet, setConnectingWallet]   = useState(false);
     const [buying, setBuying]                       = useState(false);
-    const [paymentMethod, setPaymentMethod]         = useState<PaymentMethod>('crypto');
+    const [paymentMethod, setPaymentMethod]         = useState<PaymentMethod>(
+        cryptoSupported ? 'crypto' : 'cod'
+    );
     const [fiatCurrency, setFiatCurrency]           = useState<'UAH' | 'USD' | 'SOL'>('UAH');
     const [fullName, setFullName]                   = useState(currentUser?.name ?? '');
     const [phone, setPhone]                         = useState(currentUser?.phone ?? '');
 
-    const nftCurrency = (nft.currency || 'SOL') as string;
     const nftPrice    = Number(nft.price) || 0;
-    const fee         = nftPrice * PLATFORM_FEE;
-    const total       = nftPrice + fee;
+    const transferableNftId =
+        nft.walletNftId ||
+        (Array.isArray(nft.walletNftIds) ? nft.walletNftIds[0] : '') ||
+        '';
+    const sellerAmountSol = (quote?.sellerLamports || 0) / LAMPORTS_PER_SOL;
+    const feeSol = (quote?.feeLamports || 0) / LAMPORTS_PER_SOL;
+    const totalSol = (quote?.totalLamports || 0) / LAMPORTS_PER_SOL;
 
     useEffect(() => {
         (async () => {
             if (!currentUser) { setLoading(false); return; }
-            try {
-                const all = await apiGetCryptoWallets();
-                setWallets(all || []);
-                if (all?.length > 0) setSelectedWalletId(all[0].id);
-            } catch (e) {
-                console.error('Failed to load wallets:', e);
-            } finally {
-                setLoading(false);
+            const [walletResult, quoteResult] = await Promise.allSettled([
+                apiGetCryptoWallets(),
+                transferableNftId && cryptoSupported
+                    ? apiGetPaymentQuote(transferableNftId, nft.id)
+                    : Promise.reject(new Error('This listing is not available for Phantom payment')),
+            ]);
+
+            if (walletResult.status === 'fulfilled') {
+                const all = walletResult.value || [];
+                setWallets(all);
+                if (all.length > 0) setSelectedWalletId(all[0].id);
+            } else {
+                console.error('Failed to load wallets:', walletResult.reason);
             }
+
+            if (quoteResult.status === 'fulfilled') {
+                setQuote(quoteResult.value);
+                setQuoteError('');
+            } else {
+                console.error('Failed to create payment quote:', quoteResult.reason);
+                setQuoteError(
+                    quoteResult.reason instanceof Error
+                        ? quoteResult.reason.message
+                        : 'SOL quote is currently unavailable'
+                );
+            }
+            setLoading(false);
         })();
-    }, [currentUser]);
+    }, [currentUser, cryptoSupported, nft.id, transferableNftId]);
 
     const selectedWallet = wallets.find(w => w.id === selectedWalletId);
-    const hasFunds       = selectedWallet ? (selectedWallet.balance || 0) >= total : false;
+    const hasFunds = Boolean(
+        quote && selectedWallet && (Number(selectedWallet.balance) || 0) >= totalSol
+    );
 
-    const { connect: connectPhantom } = useUmi();
+    const handleConnectWallet = async () => {
+        if (!currentUser) return;
+        setConnectingWallet(true);
+        try {
+            const address = await connectPhantomWallet(true);
+            await apiAddCryptoWallet({ address, label: 'Phantom' });
+            const all = await apiGetCryptoWallets();
+            setWallets(all || []);
+            const connected = all?.find(wallet => wallet.address === address) || all?.[0];
+            if (connected) setSelectedWalletId(connected.id);
+        } catch (error: any) {
+            alert(`Could not connect Phantom: ${error?.message || error}`);
+        } finally {
+            setConnectingWallet(false);
+        }
+    };
 
     const handleBuyCrypto = async () => {
         if (!currentUser || !selectedWalletId || !selectedWallet) return;
+        if (!cryptoSupported) {
+            alert(`Crypto payment is unavailable for listings priced in ${nftCurrency}. Use Pay on Delivery.`);
+            return;
+        }
+        if (!quote) {
+            alert('The SOL quote is unavailable. Close this window and try again.');
+            return;
+        }
+        if (quote.expiresAtUnix <= Math.floor(Date.now() / 1000)) {
+            alert('The SOL quote expired. Close this window and open Buy now again.');
+            return;
+        }
+        if (!hasFunds) {
+            alert(`Insufficient balance. You need ${totalSol.toFixed(6)} SOL.`);
+            return;
+        }
+        if (!transferableNftId) {
+            alert('This listing has no transferable NFT ID. Ask the seller to relist it.');
+            return;
+        }
 
         const sellerAddress: string | undefined = (nft as any).sellerAddress;
         if (!sellerAddress) {
@@ -67,30 +141,27 @@ const BuyModal: React.FC<BuyModalProps> = ({ nft, onClose, onSuccess }) => {
 
         setBuying(true);
         try {
-            // ── Step 1: Make sure Phantom is connected ─────────────────────────
-            // Don't gate on `isPhantom` — Phantom mobile in-app browser drops
-            // the flag. Trust any Solana provider that returns a publicKey.
-            let phantom = (window as any).phantom?.solana ?? (window as any).solana;
-            if (!phantom) {
-                throw new Error('Phantom wallet not found. Install the Phantom extension or open this app in the Phantom mobile browser.');
-            }
-            if (!phantom.publicKey) {
-                await connectPhantom();
-                phantom = (window as any).phantom?.solana ?? (window as any).solana;
+            // ── Step 1: Authorize Phantom ──────────────────────────────────────
+            // Capacitor uses Phantom's encrypted mobile deep-link protocol;
+            // regular browsers use the injected extension provider.
+            let phantomKey = await connectPhantomWallet(false);
+            if (phantomKey !== selectedWallet.address) {
+                // Let the user switch to the wallet selected in this modal.
+                phantomKey = await connectPhantomWallet(true);
             }
 
             // ── Step 2: On-chain SOL transfer ──────────────────────────────────
             console.log('[Buy] connecting to', SOLANA_RPC_URL);
             const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
 
-            const lamports = Math.round(total * LAMPORTS_PER_SOL);
-            const fromPubkey = new PublicKey(selectedWallet.address);
+            const sellerLamports = quote.sellerLamports;
+            const feeLamports = quote.feeLamports;
+            const fromPubkey = new PublicKey(phantomKey);
             const toPubkey   = new PublicKey(sellerAddress);
+            const treasuryPubkey = new PublicKey('2wZ2vKzRzY7ZxkRTRgTKVBDBVTqk1NfvGbQFgDxJAr9X');
 
-            // Sanity check: Phantom must be signing with the same key as the
-            // wallet the user picked in the dropdown.
-            const phantomKey = phantom.publicKey?.toString();
-            if (phantomKey && phantomKey !== selectedWallet.address) {
+            // Phantom must sign with the backend wallet selected for payment.
+            if (phantomKey !== selectedWallet.address) {
                 throw new Error(
                     `Phantom is unlocked for ${phantomKey.slice(0, 8)}…, but you selected wallet ${selectedWallet.address.slice(0, 8)}…. Switch accounts in Phantom and retry.`
                 );
@@ -98,30 +169,43 @@ const BuyModal: React.FC<BuyModalProps> = ({ nft, onClose, onSuccess }) => {
 
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             const tx = new Transaction().add(
-                SystemProgram.transfer({ fromPubkey, toPubkey, lamports })
+                SystemProgram.transfer({ fromPubkey, toPubkey, lamports: sellerLamports })
             );
+            if (feeLamports > 0) {
+                tx.add(SystemProgram.transfer({
+                    fromPubkey,
+                    toPubkey: treasuryPubkey,
+                    lamports: feeLamports,
+                }));
+            }
             tx.recentBlockhash = blockhash;
             tx.feePayer = fromPubkey;
 
-            console.log('[Buy] requesting signature for', lamports, 'lamports');
-            const { signature } = await phantom.signAndSendTransaction(tx);
+            console.log('[Buy] requesting signature for', sellerLamports + feeLamports, 'lamports');
+            const signature = await signAndSendPhantomTransaction(tx, connection);
             console.log('[Buy] tx submitted:', signature);
             await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, 'confirmed');
             console.log('[Buy] tx confirmed');
 
             // ── Step 3: Sync off-chain Firestore state ─────────────────────────
-            const walletNftId = nft.walletNftId || nft.id;
             const sellerId    = nft.userId;
             const postId      = nft.id;
 
-            await apiTransferNFT(walletNftId, sellerId, postId);
+            await apiTransferNFT(
+                transferableNftId,
+                sellerId,
+                postId,
+                signature,
+                phantomKey,
+                quote.quoteId,
+            );
 
             // ── Step 4: Update local UI ────────────────────────────────────────
             onSuccess?.({ ...nft, forSale: false, ownerId: currentUser.uid, ownerName: currentUser.email });
             onClose();
             alert(
                 `✅ Покупка завершена!\n\n` +
-                `NFT: ${nft.title}\nЦена: ${nftPrice} ${nftCurrency}\n` +
+                `NFT: ${nft.title}\nОплачено: ${totalSol.toFixed(6)} SOL через Phantom\n` +
                 `TX: ${signature}\n\nNFT в твоём кошельке, продавец получил уведомление.`
             );
         } catch (err: any) {
@@ -139,13 +223,14 @@ const BuyModal: React.FC<BuyModalProps> = ({ nft, onClose, onSuccess }) => {
 
     const handleCashOnDelivery = async () => {
         if (!currentUser) return;
+        if (!transferableNftId) { alert('This listing has no transferable NFT ID.'); return; }
         if (!fullName.trim())        { alert('Please enter your full name.');     return; }
         if (!phone.trim())           { alert('Please enter your phone number.'); return; }
         setBuying(true);
         try {
             await apiCashOnDelivery({
                 postId:          nft.id,
-                nftId:           nft.walletNftId || nft.id,
+                nftId:           transferableNftId,
                 deliveryAddress: 'COD',
                 currency:        fiatCurrency,
                 fullName:        fullName.trim(),
@@ -197,14 +282,21 @@ const BuyModal: React.FC<BuyModalProps> = ({ nft, onClose, onSuccess }) => {
 
                 {/* Payment method tabs */}
                 <div style={s.methodTabs}>
+                    {cryptoSupported && (
+                        <button
+                            style={{ ...s.methodTab, background: paymentMethod === 'crypto' ? '#01ff77' : '#f0f0f0', color: paymentMethod === 'crypto' ? 'black' : '#666' }}
+                            onClick={() => setPaymentMethod('crypto')}
+                        >
+                            👻 Pay with Phantom
+                        </button>
+                    )}
                     <button
-                        style={{ ...s.methodTab, background: paymentMethod === 'crypto' ? '#01ff77' : '#f0f0f0', color: paymentMethod === 'crypto' ? 'black' : '#666' }}
-                        onClick={() => setPaymentMethod('crypto')}
-                    >
-                        👻 Crypto (SOL)
-                    </button>
-                    <button
-                        style={{ ...s.methodTab, background: paymentMethod === 'cod' ? '#01ff77' : '#f0f0f0', color: paymentMethod === 'cod' ? 'black' : '#666' }}
+                        style={{
+                            ...s.methodTab,
+                            flex: cryptoSupported ? 1 : '1 1 100%',
+                            background: paymentMethod === 'cod' ? '#01ff77' : '#f0f0f0',
+                            color: paymentMethod === 'cod' ? 'black' : '#666',
+                        }}
                         onClick={() => setPaymentMethod('cod')}
                     >
                         🚚 Pay on Delivery
@@ -244,14 +336,44 @@ const BuyModal: React.FC<BuyModalProps> = ({ nft, onClose, onSuccess }) => {
                             <style>{`@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
                             <div style={s.spinner} />
                         </div>
-                    ) : wallets.length === 0 ? (
+                    ) : quoteError ? (
                         <div style={s.errorBox}>
-                            <div style={{ fontSize: '28px', marginBottom: '8px' }}>👻</div>
-                            <strong>No Phantom wallet connected</strong>
-                            <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
-                                Go to Profile → Crypto Wallets to connect one
+                            <div style={{ fontSize: '28px', marginBottom: '8px' }}>◎</div>
+                            <strong>SOL quote unavailable</strong>
+                            <div style={{ fontSize: '12px', color: '#888', marginTop: '6px', lineHeight: 1.45 }}>
+                                {quoteError}
                             </div>
                         </div>
+                    ) : wallets.length === 0 ? (
+                        <>
+                            <div style={s.connectBox}>
+                                <div style={{ fontSize: '30px', marginBottom: '8px' }}>👻</div>
+                                <strong>Connect Phantom to pay</strong>
+                                <div style={{ fontSize: '12px', color: '#777', margin: '6px 0 14px', lineHeight: 1.45 }}>
+                                    The app will open Phantom so you can approve your wallet and payment.
+                                </div>
+                                <button
+                                    style={s.connectBtn}
+                                    onClick={handleConnectWallet}
+                                    disabled={connectingWallet}
+                                >
+                                    {connectingWallet ? 'Opening Phantom…' : '👻 Connect Phantom'}
+                                </button>
+                            </div>
+                            <div style={s.summary}>
+                                <div style={s.row}>
+                                    <span style={{ color: '#888' }}>Listed price</span>
+                                    <span style={{ color: '#888' }}>{nftPrice} {nftCurrency}</span>
+                                </div>
+                                <div style={s.row}>
+                                    <span style={{ color: '#888' }}>Total in Phantom</span>
+                                    <strong style={{ color: '#00b85c' }}>{totalSol.toFixed(6)} SOL</strong>
+                                </div>
+                                <div style={{ fontSize: 11, color: '#999', lineHeight: 1.4 }}>
+                                    Includes the 1% platform fee. Quote is fixed for 10 minutes.
+                                </div>
+                            </div>
+                        </>
                     ) : (
                         <>
                             <label style={s.label}>Pay with:</label>
@@ -283,34 +405,47 @@ const BuyModal: React.FC<BuyModalProps> = ({ nft, onClose, onSuccess }) => {
                                 <div style={hasFunds ? s.okBox : s.warnBox}>
                                     {hasFunds
                                         ? `✅ Balance OK: ${(selectedWallet.balance || 0).toFixed(4)} ${selectedWallet.currency || 'SOL'}`
-                                        : `❌ Need ${total.toFixed(4)} ${nftCurrency}, have ${(selectedWallet.balance || 0).toFixed(4)} ${selectedWallet.currency || 'SOL'}`
+                                        : `❌ Need ${totalSol.toFixed(6)} SOL, have ${(selectedWallet.balance || 0).toFixed(4)} ${selectedWallet.currency || 'SOL'}`
                                     }
                                 </div>
                             )}
 
                             <div style={s.summary}>
                                 <div style={s.row}>
-                                    <span style={{ color: '#888' }}>NFT price</span>
+                                    <span style={{ color: '#888' }}>Listed price</span>
                                     <span style={{ color: '#888' }}>{nftPrice} {nftCurrency}</span>
+                                </div>
+                                {nftCurrency !== 'SOL' && (
+                                    <div style={s.row}>
+                                        <span style={{ color: '#888' }}>Phantom quote</span>
+                                        <span style={{ color: '#888' }}>{sellerAmountSol.toFixed(6)} SOL</span>
+                                    </div>
+                                )}
+                                <div style={s.row}>
+                                    <span style={{ color: '#888' }}>NFT payment</span>
+                                    <span style={{ color: '#888' }}>{sellerAmountSol.toFixed(6)} SOL</span>
                                 </div>
                                 <div style={s.row}>
                                     <span style={{ color: '#888' }}>Platform fee (1%)</span>
-                                    <span style={{ color: '#888' }}>+{fee.toFixed(4)} {nftCurrency}</span>
+                                    <span style={{ color: '#888' }}>+{feeSol.toFixed(6)} SOL</span>
                                 </div>
                                 <div style={{ ...s.row, borderTop: '1px solid #eee', paddingTop: '10px', marginTop: '4px' }}>
-                                    <strong>Total</strong>
-                                    <strong style={{ color: '#01ff77', fontSize: '16px' }}>{total.toFixed(4)} {nftCurrency}</strong>
+                                    <strong>Total in Phantom</strong>
+                                    <strong style={{ color: '#00b85c', fontSize: '16px' }}>{totalSol.toFixed(6)} SOL</strong>
+                                </div>
+                                <div style={{ fontSize: 11, color: '#999', lineHeight: 1.4 }}>
+                                    The quote is fixed for 10 minutes. Phantom will open to approve the transaction.
                                 </div>
                             </div>
 
                             <div style={s.actions}>
                                 <button style={s.cancelBtn} onClick={onClose} disabled={buying}>Cancel</button>
                                 <button
-                                    style={{ ...s.buyBtn, opacity: (!selectedWalletId || buying) ? 0.5 : 1 }}
+                                    style={{ ...s.buyBtn, opacity: (!selectedWalletId || !hasFunds || buying) ? 0.5 : 1 }}
                                     onClick={handleBuyCrypto}
-                                    disabled={!selectedWalletId || buying}
+                                    disabled={!selectedWalletId || !hasFunds || buying}
                                 >
-                                    {buying ? '⏳ Processing...' : `👻 Buy now with Crypto`}
+                                    {buying ? '⏳ Waiting for Phantom...' : '👻 Buy with Phantom'}
                                 </button>
                             </div>
                         </>
@@ -392,6 +527,8 @@ const s: any = {
     okBox:       { background: '#f0fff4', border: '1px solid #b2f0c8', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', color: '#00aa44', marginBottom: '14px' },
     warnBox:     { background: '#fff5f5', border: '1px solid #ffc0c0', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', color: '#cc2222', marginBottom: '14px' },
     errorBox:    { textAlign: 'center', background: '#fff5f5', border: '1px solid #ffc0c0', borderRadius: '12px', padding: '24px', color: '#cc2222', marginBottom: '20px' },
+    connectBox:  { textAlign: 'center', background: '#f5f2ff', border: '1px solid #d9d0ff', borderRadius: '12px', padding: '20px', color: '#30265f', marginBottom: '14px' },
+    connectBtn:  { width: '100%', padding: '13px', background: '#7c5bdc', color: 'white', border: 'none', borderRadius: '11px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' },
     summary:     { background: '#f8f8f8', borderRadius: '12px', padding: '14px', marginBottom: '20px' },
     row:         { display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' },
     actions:     { display: 'flex', gap: '10px' },

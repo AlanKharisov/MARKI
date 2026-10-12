@@ -26,6 +26,8 @@ pub struct Config {
     pub allowed_origin: String,
     /// Firebase UIDs allowed to access `/api/admin/*`. Comma-separated in env.
     pub admin_uids: Vec<String>,
+    /// Public NFT viewer URL encoded into QR codes, e.g. `https://example.com/idenity/`.
+    pub qr_base_url: String,
 }
 
 impl Config {
@@ -84,6 +86,8 @@ impl Config {
                 .map(|s| s.trim().to_owned())
                 .filter(|s| !s.is_empty())
                 .collect(),
+            qr_base_url: std::env::var("QR_BASE_URL")
+                .unwrap_or_else(|_| "https://alankharisov.github.io/idenity/".to_owned()),
         }))
     }
 }

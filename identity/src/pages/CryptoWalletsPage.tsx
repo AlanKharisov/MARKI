@@ -6,6 +6,7 @@ import {
     apiRemoveCryptoWallet,
     apiRefreshWalletBalance,
 } from '../services/apiClient';
+import { connectPhantomWallet, usesPhantomMobileDeepLinks } from '../services/phantomWallet';
 
 interface CryptoWalletsPageProps {
     onBack: () => void;
@@ -16,10 +17,9 @@ const CryptoWalletsPage: React.FC<CryptoWalletsPageProps> = ({ onBack }) => {
     const [wallets, setWallets]             = useState<any[]>([]);
     const [loading, setLoading]             = useState(true);
     const [showAddForm, setShowAddForm]     = useState(false);
-    const [walletAddress, setWalletAddress] = useState('');
     const [walletLabel, setWalletLabel]     = useState('');
+    const [connecting, setConnecting]       = useState(false);
     const [refreshing, setRefreshing]       = useState<string | null>(null);
-    const [validationError, setValidError]  = useState('');
 
     useEffect(() => { loadWallets(); }, [currentUser]); // eslint-disable-line
 
@@ -36,31 +36,25 @@ const CryptoWalletsPage: React.FC<CryptoWalletsPageProps> = ({ onBack }) => {
         }
     };
 
-    // Phantom (Solana) address: base58, 32–44 chars, no 0x prefix
-    const validatePhantomAddress = (addr: string): boolean =>
-        /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr.trim());
-
     const connectWallet = async () => {
         if (!currentUser)  { alert('Please login first'); return; }
-        if (!walletAddress){ alert('Please enter your Phantom wallet address'); return; }
-        setValidError('');
-
-        if (!validatePhantomAddress(walletAddress)) {
-            if (!window.confirm('Address format looks unusual. Connect anyway?')) return;
-        }
-
+        setConnecting(true);
         try {
+            // Native Capacitor opens Phantom and receives an encrypted callback.
+            // Browser builds use Phantom's injected extension provider.
+            const walletAddress = await connectPhantomWallet(true);
             await apiAddCryptoWallet({
-                address: walletAddress.trim(),
+                address: walletAddress,
                 ...(walletLabel.trim() ? { label: walletLabel.trim() } : {}),
             });
             await loadWallets();
             setShowAddForm(false);
-            setWalletAddress('');
             setWalletLabel('');
             alert('✅ Phantom wallet connected!');
         } catch (e: any) {
             alert(`❌ Error: ${e.message}`);
+        } finally {
+            setConnecting(false);
         }
     };
 
@@ -101,7 +95,7 @@ const CryptoWalletsPage: React.FC<CryptoWalletsPageProps> = ({ onBack }) => {
             <style>{`@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
 
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '15px' }}>
-                <button onClick={onBack} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#01ff77', padding: '10px' }}>
+                <button onClick={onBack} aria-label="Back" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#01ff77', padding: '10px' }}>
                     <i className="fas fa-arrow-left"></i>
                 </button>
                 <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: 0 }}>Crypto Wallets</h2>
@@ -195,20 +189,10 @@ const CryptoWalletsPage: React.FC<CryptoWalletsPageProps> = ({ onBack }) => {
                     <div style={{ ...card, border: '2px solid #01ff77' }}>
                         <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#333', marginBottom: '15px' }}>Connect Phantom Wallet</h3>
 
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={labelStyle}>Phantom Wallet Address</label>
-                            <input
-                                type="text"
-                                style={inputStyle}
-                                placeholder="Solana address (32–44 base58 characters)"
-                                value={walletAddress}
-                                onChange={e => { setWalletAddress(e.target.value); setValidError(''); }}
-                            />
-                            {validationError && (
-                                <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '5px', padding: '5px', background: '#ffeeee', borderRadius: '4px' }}>
-                                    {validationError}
-                                </div>
-                            )}
+                        <div style={{ marginBottom: '15px', color: '#666', fontSize: '14px', lineHeight: 1.5 }}>
+                            {usesPhantomMobileDeepLinks()
+                                ? 'Phantom will open to let you choose and approve a Solana wallet. You will return here automatically.'
+                                : 'The Phantom extension will ask you to choose and approve a Solana wallet.'}
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
@@ -223,13 +207,13 @@ const CryptoWalletsPage: React.FC<CryptoWalletsPageProps> = ({ onBack }) => {
                         </div>
 
                         <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                            <button onClick={() => { setShowAddForm(false); setValidError(''); }}
+                            <button onClick={() => setShowAddForm(false)} disabled={connecting}
                                     style={{ flex: 1, padding: '12px', background: 'white', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
                                 Cancel
                             </button>
-                            <button onClick={connectWallet}
+                            <button onClick={connectWallet} disabled={connecting}
                                     style={{ flex: 1, padding: '12px', background: '#01ff77', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
-                                Connect
+                                {connecting ? 'Opening Phantom…' : 'Open Phantom'}
                             </button>
                         </div>
                     </div>
@@ -242,7 +226,7 @@ const CryptoWalletsPage: React.FC<CryptoWalletsPageProps> = ({ onBack }) => {
                         <strong>ℹ️ About Phantom Wallet:</strong>
                         <ul style={{ marginTop: '5px', marginBottom: '5px', paddingLeft: '16px' }}>
                             <li>Only Solana/Phantom wallets are supported</li>
-                            <li>Use Phantom browser extension to get your address</li>
+                            <li>Your address is read directly after you approve in Phantom</li>
                             <li>Balance is fetched from the Solana network</li>
                         </ul>
                     </div>

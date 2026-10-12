@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::{
     errors::{ApiResult, AppError},
     middleware::auth::AuthenticatedUser,
-    models::{BatchItemResult, BatchNftInput, BatchUploadResponse, CreateEditionResponse, CreateNftRequest, Nft, PaymentQuoteRequest, TransferNftRequest, UpdateNftRequest},
+    models::{BatchItemResult, BatchNftInput, BatchUploadResponse, CreateEditionResponse, CreateNftRequest, Nft, PaymentQuoteRequest, TransferNftRequest, UpdateNftRequest, VerifyNftRequest, VerifyNftResponse},
     notification_helpers,
     services::StorageClient,
     AppState,
@@ -38,7 +38,7 @@ fn collection_title_after_sale(title: &str, remaining: usize) -> String {
 }
 
 /// Load the `nfts` array from `marki_wallets/{uid}`.
-async fn load_nfts(state: &AppState, uid: &str) -> ApiResult<Vec<Nft>> {
+pub(crate) async fn load_nfts(state: &AppState, uid: &str) -> ApiResult<Vec<Nft>> {
     let doc = state
         .firestore
         .get("marki_wallets", uid)
@@ -55,13 +55,48 @@ async fn load_nfts(state: &AppState, uid: &str) -> ApiResult<Vec<Nft>> {
 }
 
 /// Persist the `nfts` array back to `marki_wallets/{uid}`.
-async fn save_nfts(state: &AppState, uid: &str, nfts: &[Nft]) -> ApiResult<()> {
+pub(crate) async fn save_nfts(state: &AppState, uid: &str, nfts: &[Nft]) -> ApiResult<()> {
     state
         .firestore
         .update("marki_wallets", uid, &json!({ "nfts": nfts }))
         .await
         .map_err(|e| AppError::Firebase(e.to_string()))?;
     Ok(())
+}
+
+/// Viewer link encoded into an NFT's QR code.
+fn viewer_url(state: &AppState, nft_id: &str) -> String {
+    let base = &state.config.qr_base_url;
+    let sep = if base.contains('?') { '&' } else { '?' };
+    format!("{}{}nft={}", base, sep, urlencoding::encode(nft_id))
+}
+
+/// Render `url` as a PNG QR code (high error correction, quiet zone, ~320 px).
+fn render_qr_png(url: &str) -> ApiResult<Vec<u8>> {
+    let code = qrcode::QrCode::with_error_correction_level(url.as_bytes(), qrcode::EcLevel::H)
+        .map_err(|e| AppError::BadRequest(format!("QR encode failed: {e}")))?;
+    let img = code
+        .render::<image::Luma<u8>>()
+        .min_dimensions(320, 320)
+        .quiet_zone(true)
+        .build();
+    let mut png = std::io::Cursor::new(Vec::new());
+    img.write_to(&mut png, image::ImageFormat::Png)
+        .map_err(|e| AppError::Internal(anyhow::anyhow!("QR PNG encode failed: {e}")))?;
+    Ok(png.into_inner())
+}
+
+/// Generate the QR PNG for one NFT, upload it and return its URL.
+/// The `v` query parameter busts browser caches after a regeneration.
+async fn upload_nft_qr(state: &AppState, owner_id: &str, nft_id: &str) -> ApiResult<String> {
+    let png = render_qr_png(&viewer_url(state, nft_id))?;
+    let path = format!("qr/{}/{}.png", owner_id, nft_id);
+    let url = state
+        .storage
+        .upload(&path, png, "image/png")
+        .await
+        .map_err(|e| AppError::Firebase(e.to_string()))?;
+    Ok(format!("{}&v={}", url, Utc::now().timestamp()))
 }
 
 /// Upload image bytes to Firebase Storage and return the public URL.
@@ -115,7 +150,20 @@ pub async fn get_nfts(
     State(state): State<Arc<AppState>>,
     Extension(auth): Extension<AuthenticatedUser>,
 ) -> ApiResult<Json<Vec<Nft>>> {
-    let nfts = load_nfts(&state, &auth.uid).await?;
+    let wallet = state
+        .firestore
+        .get("marki_wallets", &auth.uid)
+        .await
+        .map_err(|e| AppError::Firebase(e.to_string()))?
+        .unwrap_or_else(|| json!({}));
+    let mut nfts: Vec<Nft> = wallet
+        .get("nfts")
+        .and_then(|v| serde_json::from_value(v.clone()).ok())
+        .unwrap_or_default();
+    // Views are counted outside the array; see public::nft_views.
+    for n in nfts.iter_mut() {
+        n.views = crate::handlers::public::nft_views(&wallet, n);
+    }
     Ok(Json(nfts))
 }
 
@@ -131,6 +179,37 @@ pub async fn get_nft(
         .find(|n| n.id == nft_id)
         .ok_or_else(|| AppError::NotFound(format!("NFT {} not found", nft_id)))?;
     Ok(Json(nft))
+}
+
+/// Verify that an NFT is present in an Idenity wallet and report whether its
+/// issuing brand has passed company verification.
+pub async fn verify_nft(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<VerifyNftRequest>,
+) -> ApiResult<Json<VerifyNftResponse>> {
+    let nft = load_nfts(&state, &body.owner_id)
+        .await?
+        .into_iter()
+        .find(|n| n.id == body.nft_id && n.owner_id == body.owner_id)
+        .ok_or_else(|| AppError::NotFound("This QR is not registered by Idenity".to_owned()))?;
+
+    let issuer = state
+        .firestore
+        .get("users", &body.owner_id)
+        .await
+        .map_err(|e| AppError::Firebase(e.to_string()))?
+        .ok_or_else(|| AppError::NotFound("Issuer profile not found".to_owned()))?;
+
+    Ok(Json(VerifyNftResponse {
+        issued_by_idenity: true,
+        issuer_verified: issuer.get("companyApproved").and_then(|v| v.as_bool()).unwrap_or(false),
+        issuer_name: issuer.get("companyName")
+            .or_else(|| issuer.get("name"))
+            .and_then(|v| v.as_str())
+            .unwrap_or(&nft.owner_name)
+            .to_owned(),
+        nft,
+    }))
 }
 
 /// `POST /api/nfts`
@@ -210,7 +289,8 @@ pub async fn create_nft(
         "image":       image_url,
         "attributes": [
             { "trait_type": "Category",    "value": req.category.as_deref().unwrap_or("Art") },
-            { "trait_type": "Blockchain",  "value": "Solana" }
+            { "trait_type": "Blockchain",  "value": "Solana" },
+            { "trait_type": "Idenity Platform Resale Fee", "value": "3%" }
         ],
         "properties": {
             "files":    [{ "uri": image_url, "type": image_ct }],
@@ -241,6 +321,7 @@ pub async fn create_nft(
         for_sale: req.for_sale,
         currency: Some(req.currency),
         created_at: Utc::now().to_rfc3339(),
+        views: 0,
         metadata_uri: Some(metadata_uri),
         mint_address: None,
         edition_count: None,
@@ -250,6 +331,9 @@ pub async fn create_nft(
         batch_name: None,
         batch_index: None,
         batch_size: None,
+        qr_image_url: None,
+        gift_from: None,
+        gift_id: None,
     };
 
     let mut nfts = load_nfts(&state, &auth.uid).await?;
@@ -382,7 +466,10 @@ pub async fn batch_create_nfts(
                     "symbol":      "",
                     "description": description,
                     "image":       image_url,
-                    "attributes":  [{ "trait_type": "Blockchain", "value": "Solana" }],
+                    "attributes":  [
+                        { "trait_type": "Blockchain", "value": "Solana" },
+                        { "trait_type": "Idenity Platform Resale Fee", "value": "3%" }
+                    ],
                     "properties":  {
                         "files":    [{ "uri": image_url, "type": ct }],
                         "category": "image"
@@ -412,6 +499,7 @@ pub async fn batch_create_nfts(
                     for_sale: shared.for_sale,
                     currency: Some(shared.currency.clone()),
                     created_at: Utc::now().to_rfc3339(),
+                    views: 0,
                     metadata_uri: Some(metadata_uri.clone()),
                     mint_address: None,
                     edition_count: None,
@@ -421,6 +509,9 @@ pub async fn batch_create_nfts(
                     batch_name: Some(batch_name.clone()),
                     batch_index: Some(index as u32),
                     batch_size: Some(batch_size),
+                    qr_image_url: None,
+                    gift_from: None,
+                    gift_id: None,
                 };
                 nfts.push(nft);
                 results.push(BatchItemResult {
@@ -484,6 +575,56 @@ pub async fn update_nft(
     Ok(Json(updated))
 }
 
+/// `POST /api/nfts/:id/qr` — create (or recreate) the QR code of one NFT.
+pub async fn generate_nft_qr(
+    State(state): State<Arc<AppState>>,
+    Extension(auth): Extension<AuthenticatedUser>,
+    Path(nft_id): Path<String>,
+) -> ApiResult<Json<Nft>> {
+    let mut nfts = load_nfts(&state, &auth.uid).await?;
+    let idx = nfts
+        .iter()
+        .position(|n| n.id == nft_id)
+        .ok_or_else(|| AppError::NotFound(format!("NFT {} not found", nft_id)))?;
+    nfts[idx].qr_image_url = Some(upload_nft_qr(&state, &auth.uid, &nft_id).await?);
+    save_nfts(&state, &auth.uid, &nfts).await?;
+    Ok(Json(nfts[idx].clone()))
+}
+
+/// Generate QR codes for the caller's NFTs: all of them when `regenerate`,
+/// otherwise only those without one. Saves once at the end.
+async fn generate_qr_codes(state: &AppState, uid: &str, regenerate: bool) -> ApiResult<usize> {
+    let mut nfts = load_nfts(state, uid).await?;
+    let mut count = 0;
+    for nft in nfts.iter_mut().filter(|n| regenerate || n.qr_image_url.is_none()) {
+        nft.qr_image_url = Some(upload_nft_qr(state, uid, &nft.id).await?);
+        count += 1;
+    }
+    if count > 0 {
+        save_nfts(state, uid, &nfts).await?;
+    }
+    Ok(count)
+}
+
+/// `POST /api/nfts/qr-missing` — QR codes for NFTs that have none yet.
+pub async fn generate_missing_qr(
+    State(state): State<Arc<AppState>>,
+    Extension(auth): Extension<AuthenticatedUser>,
+) -> ApiResult<Json<serde_json::Value>> {
+    let generated = generate_qr_codes(&state, &auth.uid, false).await?;
+    Ok(Json(json!({ "generated": generated })))
+}
+
+/// `POST /api/nfts/regenerate-qr` — recreate every QR code, e.g. after
+/// `QR_BASE_URL` changed.
+pub async fn regenerate_all_qr(
+    State(state): State<Arc<AppState>>,
+    Extension(auth): Extension<AuthenticatedUser>,
+) -> ApiResult<Json<serde_json::Value>> {
+    let regenerated = generate_qr_codes(&state, &auth.uid, true).await?;
+    Ok(Json(json!({ "regenerated": regenerated })))
+}
+
 /// `DELETE /api/nfts/:id`
 pub async fn delete_nft(
     State(state): State<Arc<AppState>>,
@@ -506,8 +647,9 @@ pub async fn delete_nft(
 
 /// `POST /api/nfts/editions`
 ///
-/// Creates one Master Edition NFT record plus N print-edition placeholder
-/// records in Firestore, all sharing a single uploaded image and metadata JSON.
+/// Creates N edition records sharing a single uploaded image and metadata JSON.
+/// Solana also gets a Master Edition record (Metaplex); ICP has no such concept,
+/// so there every record is a copy backed by its own canister token.
 ///
 /// The frontend is responsible for the on-chain work:
 ///   1. `createNft(…, { maxSupply: some(N) })` — registers the Master Edition.
@@ -570,6 +712,9 @@ pub async fn create_edition_nfts(
         .and_then(|d| d.get("name")).and_then(|v| v.as_str())
         .unwrap_or("Unknown").to_owned();
 
+    // Master editions are a Metaplex (Solana) concept.
+    let has_master = !req.blockchain.eq_ignore_ascii_case("icp");
+
     // Upload the shared image once.
     let master_id = Uuid::new_v4().to_string();
     let image_url = upload_nft_image(&state, &auth.uid, &master_id, bytes, &image_ct).await?;
@@ -582,8 +727,9 @@ pub async fn create_edition_nfts(
         "image":       image_url,
         "attributes": [
             { "trait_type": "Category",    "value": req.category.as_deref().unwrap_or("Art") },
-            { "trait_type": "Blockchain",  "value": "Solana" },
-            { "trait_type": "Edition",     "value": format!("1 of {}", edition_count) }
+            { "trait_type": "Blockchain",  "value": if has_master { "Solana" } else { "ICP" } },
+            { "trait_type": "Edition",     "value": format!("1 of {}", edition_count) },
+            { "trait_type": "Idenity Platform Resale Fee", "value": "3%" }
         ],
         "properties": {
             "files":    [{ "uri": image_url, "type": image_ct }],
@@ -600,7 +746,7 @@ pub async fn create_edition_nfts(
 
     let now = Utc::now().to_rfc3339();
     let batch_id = Uuid::new_v4().to_string();
-    let batch_size = edition_count + 1;
+    let batch_size = if has_master { edition_count + 1 } else { edition_count };
     let batch_name = req
         .batch_name
         .as_deref()
@@ -625,6 +771,7 @@ pub async fn create_edition_nfts(
         for_sale:       req.for_sale,
         currency:       Some(req.currency.clone()),
         created_at:     now.clone(),
+        views:          0,
         metadata_uri:   Some(metadata_uri.clone()),
         mint_address:   None,
         edition_count:  Some(edition_count),
@@ -634,12 +781,17 @@ pub async fn create_edition_nfts(
         batch_name:     Some(batch_name),
         batch_index:    Some(0),
         batch_size:     Some(batch_size),
+        qr_image_url: None,
+        gift_from: None,
+        gift_id: None,
     };
 
     // ── Print-edition placeholder records (edition_number = 1..N) ─────────────
     let mut edition_ids: Vec<String> = Vec::with_capacity(edition_count as usize);
     let mut all_nfts = load_nfts(&state, &auth.uid).await?;
-    all_nfts.push(master.clone());
+    if has_master {
+        all_nfts.push(master.clone());
+    }
 
     for n in 1..=edition_count {
         let eid = Uuid::new_v4().to_string();
@@ -648,7 +800,7 @@ pub async fn create_edition_nfts(
             id:             eid,
             title:          format!("{} #{}", req.title, n),
             edition_number: Some(n),
-            master_nft_id:  Some(master_id.clone()),
+            master_nft_id:  has_master.then(|| master_id.clone()),
             batch_index:    Some(n),
             // Inherit everything else from master
             mint_address:   None,
@@ -670,7 +822,7 @@ pub async fn create_edition_nfts(
     notification_helpers::notify_nft_created(&state.firestore, &auth.uid, &req.title).await;
 
     Ok((StatusCode::CREATED, Json(CreateEditionResponse {
-        master_id,
+        master_id: has_master.then_some(master_id),
         metadata_uri,
         image_url,
         edition_ids,
@@ -1104,4 +1256,17 @@ pub async fn transfer_nft(
         "success":  true,
         "newNftId": new_id,
     })))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::render_qr_png;
+
+    #[test]
+    fn qr_is_png() {
+        let png = render_qr_png("https://example.com/idenity/?nft=abc").unwrap();
+        assert_eq!(&png[..8], b"\x89PNG\r\n\x1a\n");
+        let img = image::load_from_memory(&png).unwrap();
+        assert!(img.width() >= 320);
+    }
 }

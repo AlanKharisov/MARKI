@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { signInWithGoogle, signInWithFacebook, signInWithApple } from '../firebase/socialAuth';
+import { auth } from '../firebase/config';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithGoogle } from '../firebase/socialAuth';
 import { Icon } from '../components/brand';
 
 interface AuthScreenProps {
   onAuthSuccess: () => void;
+  onBack: () => void;
 }
 
-const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
+const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, onBack }) => {
   const [currentForm, setCurrentForm] = useState<'login' | 'signup'>('login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -24,6 +28,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setNotice('');
     if (password !== confirmPassword) { setError('Passwords do not match'); return; }
     if (!username) { setError('Username is required'); return; }
     setLoading(true);
@@ -36,11 +41,47 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setNotice('');
     setLoading(true);
     const result = await login(email, password);
     setLoading(false);
     if (result.success) onAuthSuccess();
     else setError(result.error || 'Login failed');
+  };
+
+  const handleForgotPassword = async () => {
+    setError('');
+    setNotice('');
+    if (!email.trim()) {
+      setError('Enter your email address first.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      setNotice('Password reset instructions were sent to your email.');
+    } catch (e: any) {
+      setError(e?.message || 'Could not send password reset email.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocialSignIn = async (
+    provider: () => Promise<{ success: boolean; error?: string }>,
+  ) => {
+    setError('');
+    setNotice('');
+    setLoading(true);
+    try {
+      const result = await provider();
+      if (!result.success) setError(result.error || 'Social sign-in failed.');
+    } catch (e: any) {
+      setError(e?.message || 'Social sign-in failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isSignup = currentForm === 'signup';
@@ -55,7 +96,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
       }}
     >
       <button
-        onClick={() => (isSignup ? setCurrentForm('login') : window.history.back())}
+        onClick={() => (isSignup ? setCurrentForm('login') : onBack())}
         style={{
           width: 40,
           height: 40,
@@ -93,6 +134,22 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
           }}
         >
           {error}
+        </div>
+      )}
+
+      {notice && (
+        <div
+          style={{
+            marginTop: 16,
+            padding: '10px 14px',
+            background: 'var(--primary-soft)',
+            color: 'var(--primary-ink)',
+            borderRadius: 12,
+            fontSize: 13,
+            border: '1px solid var(--border)',
+          }}
+        >
+          {notice}
         </div>
       )}
 
@@ -181,7 +238,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
             <span style={{ color: 'var(--text-muted)' }}>&nbsp;</span>
             <button
               type="button"
-              onClick={() => { /* TODO: forgot password flow */ }}
+              onClick={handleForgotPassword}
+              disabled={loading}
               style={{ color: 'var(--primary)', fontWeight: 600, padding: 0 }}
             >
               Forgot?
@@ -214,12 +272,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
         <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
       </div>
 
-      <div style={{ display: 'flex', gap: 10 }}>
+      <div style={{ display: 'flex' }}>
         <button
-          onClick={() => signInWithGoogle()}
+          onClick={() => handleSocialSignIn(signInWithGoogle)}
           disabled={loading}
           style={{
-            flex: 1,
+            width: '100%',
             padding: 14,
             borderRadius: 14,
             background: 'var(--bg-soft)',
@@ -229,39 +287,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
           }}
           aria-label="Continue with Google"
         >
-          G
-        </button>
-        <button
-          onClick={() => signInWithFacebook()}
-          disabled={loading}
-          style={{
-            flex: 1,
-            padding: 14,
-            borderRadius: 14,
-            background: 'var(--bg-soft)',
-            fontWeight: 700,
-            fontSize: 18,
-            color: 'var(--text)',
-          }}
-          aria-label="Continue with Facebook"
-        >
-          f
-        </button>
-        <button
-          onClick={() => signInWithApple()}
-          disabled={loading}
-          style={{
-            flex: 1,
-            padding: 14,
-            borderRadius: 14,
-            background: 'var(--bg-soft)',
-            fontWeight: 700,
-            fontSize: 18,
-            color: 'var(--text)',
-          }}
-          aria-label="Continue with Apple"
-        >
-
+          Continue with Google
         </button>
       </div>
 
@@ -279,7 +305,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
             Already have an account?{' '}
             <button
               type="button"
-              onClick={() => { setCurrentForm('login'); setError(''); }}
+              onClick={() => { setCurrentForm('login'); setError(''); setNotice(''); }}
               style={{ color: 'var(--primary)', fontWeight: 600, padding: 0 }}
             >
               Sign in
@@ -290,7 +316,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
             Don't have an account?{' '}
             <button
               type="button"
-              onClick={() => { setCurrentForm('signup'); setError(''); }}
+              onClick={() => { setCurrentForm('signup'); setError(''); setNotice(''); }}
               style={{ color: 'var(--primary)', fontWeight: 600, padding: 0 }}
             >
               Sign up

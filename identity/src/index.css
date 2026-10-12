@@ -4,7 +4,7 @@ body {
   margin: 0;
   background: var(--bg-page);
   color: var(--text);
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: 'Sora', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
