@@ -66,7 +66,7 @@ mod tests {
         let users = db.query("users", vec![QueryFilter::equal("username", username)], None, None).await.unwrap();
         let uid = users[0]["uid"].as_str().unwrap().to_owned();
         println!("tokens: {}", tokens_of(&db, &uid).await.len());
-        send(&db, &json!({ "userId": uid, "title": "🔔 Marki", "text": "Тест: сповіщення працюють", "type": "system" })).await;
+        send(&db, &json!({ "id": format!("test-{}", chrono::Utc::now().timestamp_millis()), "userId": uid, "title": "❤️ water", "text": "Подобається ваш NFT «Marki Genesis #1»", "type": "like" })).await;
         println!("tokens after: {}", tokens_of(&db, &uid).await.len());
     }
 }
