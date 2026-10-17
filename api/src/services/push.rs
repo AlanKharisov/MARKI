@@ -34,7 +34,12 @@ pub async fn send(db: &FirestoreClient, notification: &Value) {
         let message = json!({ "message": {
             "token": token,
             "notification": { "title": title, "body": body },
-            "data": { "type": kind, "page": "notifications", "id": notification["id"].as_str().unwrap_or_default() },
+            "data": {
+                "type": kind,
+                "id": notification["id"].as_str().unwrap_or_default(),
+                "action": notification["metadata"]["action"].as_str().unwrap_or_default(),
+                "target": notification["metadata"]["target"].as_str().unwrap_or_default(),
+            },
             "android": { "priority": "high", "notification": { "channel_id": "marki" } },
         }});
         match db.fcm_send(&message).await {
