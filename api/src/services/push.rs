@@ -48,3 +48,25 @@ pub async fn send(db: &FirestoreClient, notification: &Value) {
         let _ = db.set_raw(TOKENS, uid, &json!({ "tokens": alive })).await;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::services::{firestore::QueryFilter, GoogleAuthService};
+    use std::sync::Arc;
+
+    /// Live: `PUSH_TEST_USERNAME=alan cargo test push_live -- --ignored --nocapture`
+    #[tokio::test]
+    #[ignore]
+    async fn push_live() {
+        dotenvy::dotenv().ok();
+        let config = crate::config::Config::from_env().unwrap();
+        let db = FirestoreClient::new(config.clone(), Arc::new(GoogleAuthService::new(config).unwrap()));
+        let username = std::env::var("PUSH_TEST_USERNAME").unwrap();
+        let users = db.query("users", vec![QueryFilter::equal("username", username)], None, None).await.unwrap();
+        let uid = users[0]["uid"].as_str().unwrap().to_owned();
+        println!("tokens: {}", tokens_of(&db, &uid).await.len());
+        send(&db, &json!({ "userId": uid, "title": "🔔 Marki", "text": "Тест: сповіщення працюють", "type": "system" })).await;
+        println!("tokens after: {}", tokens_of(&db, &uid).await.len());
+    }
+}
