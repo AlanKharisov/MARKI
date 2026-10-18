@@ -320,3 +320,25 @@ mod list_posts {
         }
     }
 }
+
+#[cfg(test)]
+mod remove_orphan_posts {
+    use crate::services::{FirestoreClient, GoogleAuthService};
+    use std::sync::Arc;
+
+    /// Live: removes posts by their real document name when the title matches `TITLES`.
+    #[tokio::test]
+    #[ignore]
+    async fn remove_posts_by_title_live() {
+        dotenvy::dotenv().ok();
+        let config = crate::config::Config::from_env().unwrap();
+        let db = FirestoreClient::new(config.clone(), Arc::new(GoogleAuthService::new(config).unwrap()));
+        let titles: Vec<String> = std::env::var("TITLES").unwrap().split('|').map(str::to_owned).collect();
+        for (name, title) in db.names_and_titles("posts").await.unwrap() {
+            if titles.contains(&title) {
+                println!("delete posts/{name} «{title}»");
+                if std::env::var("APPLY").is_ok_and(|v| v == "1") { db.delete("posts", &name).await.unwrap(); }
+            }
+        }
+    }
+}
