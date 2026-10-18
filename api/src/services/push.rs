@@ -198,10 +198,16 @@ mod cleanup_test_nfts {
     use std::sync::Arc;
 
     /// Minted for real: an ICP token (`icp:<canister>:<id>`) or a Solana mint address.
+    /// Mints that exist on a real network: the mainnet ICP canister and the three
+    /// Solana mints found on mainnet-beta (the rest were made on devnet).
+    const SOLANA_MAINNET: &[&str] = &[
+        "5uEgQTmoKyvq2fM9Bn2qabTeqZA2MFufRVCU6BFnCqUk",
+        "ELSGC6qmJg2CCZVYidQx2yE5T8g4VhHEXNUVuCVzCwvB",
+        "FwxtySFhWsK5KR6MRKvzfPvuqMhHfqj6bkkxJtsWjpc9",
+    ];
     pub fn real_mint(m: &str) -> bool {
         let m = m.trim();
-        if m.starts_with("icp:") { return m.split(':').count() == 3; }
-        (32..=44).contains(&m.len()) && m.chars().all(|c| c.is_ascii_alphanumeric() && !"0OIl".contains(c))
+        m.starts_with("icp:dbrm3-yqaaa-aaaak-qzjeq-cai:") || SOLANA_MAINNET.contains(&m)
     }
 
     fn nfts(doc: &Value) -> Vec<Value> { doc["nfts"].as_array().cloned().unwrap_or_default() }
@@ -252,7 +258,8 @@ mod cleanup_test_nfts {
         for p in &posts {
             let refs: Vec<String> = p["walletNftIds"].as_array().cloned().unwrap_or_default().iter()
                 .chain(std::iter::once(&p["walletNftId"])).filter_map(|v| v.as_str().map(str::to_owned)).filter(|s| !s.is_empty()).collect();
-            let only_test = !refs.is_empty() && refs.iter().all(|r| test_ids.contains(r) && !real_ids.contains(r));
+            // Old posts without NFTs are test posts too; a post stays if anything in it is real.
+            let only_test = !refs.iter().any(|r| real_ids.contains(r));
             if only_test { drop_posts.push(p.clone()); }
         }
         println!("posts: {} total, remove {} (made only of test NFTs)", posts.len(), drop_posts.len());
@@ -275,5 +282,41 @@ mod cleanup_test_nfts {
             for k in rest.len() as u64 + 1..=old_chunks { let _ = db.delete("marki_wallet_nfts", &format!("{uid}_{k}")).await; }
         }
         println!("applied");
+    }
+}
+
+#[cfg(test)]
+mod list_posts {
+    use crate::services::{FirestoreClient, GoogleAuthService};
+    use std::collections::HashMap;
+    use std::sync::Arc;
+
+    /// Live: every post with what it points to (and whether that NFT is minted).
+    #[tokio::test]
+    #[ignore]
+    async fn list_posts_live() {
+        dotenvy::dotenv().ok();
+        let config = crate::config::Config::from_env().unwrap();
+        let db = FirestoreClient::new(config.clone(), Arc::new(GoogleAuthService::new(config).unwrap()));
+        let names: HashMap<String, String> = db.query("users", vec![], None, Some(5000)).await.unwrap().into_iter()
+            .map(|u| (u["uid"].as_str().unwrap_or("").to_owned(), u["username"].as_str().unwrap_or("").to_owned())).collect();
+        let mut mints: HashMap<String, String> = HashMap::new();
+        for w in db.query("marki_wallets", vec![], None, None).await.unwrap() {
+            let uid = w["userId"].as_str().or(w["id"].as_str()).unwrap_or("").to_owned();
+            let mut all = w["nfts"].as_array().cloned().unwrap_or_default();
+            for k in 1..=w["nftChunks"].as_u64().unwrap_or(0) {
+                if let Some(c) = db.get("marki_wallet_nfts", &format!("{uid}_{k}")).await.unwrap() { all.extend(c["nfts"].as_array().cloned().unwrap_or_default()); }
+            }
+            for n in all { if std::env::var("FULL").is_ok() { if let Some(m) = n["mintAddress"].as_str() { println!("MINT {m}"); } } mints.insert(n["id"].as_str().unwrap_or("").to_owned(), n["mintAddress"].as_str().unwrap_or("-").chars().take(14).collect()); }
+        }
+        let mut posts = db.query("posts", vec![], None, None).await.unwrap();
+        posts.sort_by(|a, b| b["createdAt"].as_str().cmp(&a["createdAt"].as_str()));
+        for p in posts {
+            let refs: Vec<String> = p["walletNftIds"].as_array().cloned().unwrap_or_default().iter().chain(std::iter::once(&p["walletNftId"]))
+                .filter_map(|v| v.as_str().map(str::to_owned)).filter(|s| !s.is_empty()).collect();
+            let state: Vec<String> = refs.iter().take(2).map(|r| mints.get(r).cloned().unwrap_or("GONE".into())).collect();
+            println!("{} | @{:<14} | {:<26} | refs {:>3} {:?} | img {}", &p["createdAt"].as_str().unwrap_or("")[..10], names.get(p["userId"].as_str().unwrap_or("")).cloned().unwrap_or_default(),
+                p["title"].as_str().unwrap_or("").chars().take(26).collect::<String>(), refs.len(), state, p["nftImage"].as_str().map(|s| !s.is_empty()).unwrap_or(false));
+        }
     }
 }
