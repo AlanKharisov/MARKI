@@ -8,7 +8,7 @@ import nacl from 'tweetnacl';
 const PHANTOM_BASE_URL = 'https://phantom.app/ul/v1';
 const CALLBACK_SCHEME = 'markidentity';
 const CALLBACK_HOST = 'phantom';
-const APP_URL = 'https://idenity.onrender.com';
+const APP_URL = 'https://marki-gj28.onrender.com';
 const CLUSTER = 'devnet';
 const SESSION_STORAGE_KEY = 'mark.identity.phantom.session.v1';
 const CALLBACK_TIMEOUT_MS = 5 * 60 * 1000;
