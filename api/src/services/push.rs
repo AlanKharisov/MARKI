@@ -525,3 +525,40 @@ mod hide_more {
         println!("hidden nfts {} (+{} «{title}»), posts {}", cfg["hiddenNftIds"].as_array().unwrap().len(), ids.len(), cfg["hiddenPostIds"].as_array().unwrap().len());
     }
 }
+
+#[cfg(test)]
+mod delete_item {
+    use crate::services::{FirestoreClient, GoogleAuthService};
+    use serde_json::{json, Value};
+    use std::sync::Arc;
+
+    /// Live: removes the owner's NFTs titled `TITLE` and the post `POST_ID`, saving them to `BACKUP` first.
+    #[tokio::test]
+    #[ignore]
+    async fn delete_item_live() {
+        dotenvy::dotenv().ok();
+        let config = crate::config::Config::from_env().unwrap();
+        let db = FirestoreClient::new(config.clone(), Arc::new(GoogleAuthService::new(config).unwrap()));
+        let (post, title, owner) = (std::env::var("POST_ID").unwrap(), std::env::var("TITLE").unwrap(), std::env::var("OWNER").unwrap());
+        let w = db.get("marki_wallets", &owner).await.unwrap().unwrap();
+        let chunks = w["nftChunks"].as_u64().unwrap_or(0);
+        let mut all = w["nfts"].as_array().cloned().unwrap_or_default();
+        for k in 1..=chunks {
+            if let Some(c) = db.get("marki_wallet_nfts", &format!("{owner}_{k}")).await.unwrap() { all.extend(c["nfts"].as_array().cloned().unwrap_or_default()); }
+        }
+        let (gone, keep): (Vec<Value>, Vec<Value>) = all.into_iter().partition(|n| n["title"] == title.as_str());
+        assert!(!gone.is_empty(), "nothing titled {title}");
+        let backup = json!({ "nfts": gone, "post": db.get("posts", &post).await.unwrap() });
+        std::fs::write(std::env::var("BACKUP").unwrap(), serde_json::to_string_pretty(&backup).unwrap()).unwrap();
+        let mut parts = keep.chunks(400);
+        let first = parts.next().unwrap_or(&[]).to_vec();
+        let rest: Vec<Vec<Value>> = parts.map(|c| c.to_vec()).collect();
+        for (i, part) in rest.iter().enumerate() {
+            db.set_raw("marki_wallet_nfts", &format!("{owner}_{}", i + 1), &json!({ "userId": owner, "nfts": part })).await.unwrap();
+        }
+        db.update("marki_wallets", &owner, &json!({ "nfts": first, "nftChunks": rest.len() })).await.unwrap();
+        for k in rest.len() as u64 + 1..=chunks { let _ = db.delete("marki_wallet_nfts", &format!("{owner}_{k}")).await; }
+        db.delete("posts", &post).await.unwrap();
+        println!("deleted {} NFT «{title}» and post {post}; left {}", backup["nfts"].as_array().unwrap().len(), keep.len());
+    }
+}
