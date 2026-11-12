@@ -346,7 +346,7 @@ impl MarketRules {
     }
 
     /// Only things made by their owner: a received gift is not market material.
-    fn shows_nft(&self, n: &crate::models::Nft) -> bool {
+    pub(crate) fn shows_nft(&self, n: &crate::models::Nft) -> bool {
         let received = n.gift_from.is_some() || n.gift_id.is_some() || n.owners.len() > 1;
         !received && !self.hidden_nfts.contains(&n.id) && !Self::about_icp(&format!("{} {}", n.title, n.description))
     }
@@ -430,5 +430,36 @@ mod market_rules_tests {
         assert!(!MarketRules::about_icp("The first Marki passport ever minted on the Internet Computer"));
         assert!(!MarketRules::about_icp("Kofta Вовна"));
         assert!(!MarketRules::about_icp("Epicplan"));
+    }
+}
+
+#[cfg(test)]
+mod market_rules_live {
+    use super::MarketRules;
+    use crate::services::{FirestoreClient, GoogleAuthService};
+    use std::sync::Arc;
+
+    /// Live: what the current market rules let through, collection by collection (same filter as /api/discover).
+    #[tokio::test]
+    #[ignore]
+    async fn market_rules_live() {
+        dotenvy::dotenv().ok();
+        let config = crate::config::Config::from_env().unwrap();
+        let firestore = Arc::new(FirestoreClient::new(config.clone(), Arc::new(GoogleAuthService::new(config.clone()).unwrap())));
+        let doc = firestore.get("market_config", "main").await.unwrap().unwrap_or_default();
+        let set = |k: &str| doc[k].as_array().into_iter().flatten().filter_map(|v| v.as_str().map(str::to_owned)).collect();
+        let rules = MarketRules { hidden_posts: set("hiddenPostIds"), hidden_nfts: set("hiddenNftIds") };
+        let mut shown = std::collections::BTreeMap::<String, usize>::new();
+        for w in firestore.query("marki_wallets", vec![], None, None).await.unwrap() {
+            let uid = w["userId"].as_str().or(w["id"].as_str()).unwrap_or_default().to_owned();
+            let mut all: Vec<crate::models::Nft> = serde_json::from_value(w["nfts"].clone()).unwrap_or_default();
+            for k in 1..=w["nftChunks"].as_u64().unwrap_or(0) {
+                if let Some(c) = firestore.get("marki_wallet_nfts", &format!("{uid}_{k}")).await.unwrap() { all.extend(serde_json::from_value::<Vec<crate::models::Nft>>(c["nfts"].clone()).unwrap_or_default()); }
+            }
+            for n in all.iter().filter(|n| n.mint_address.as_deref().is_some_and(|m| !m.is_empty()) && !n.image.is_empty() && rules.shows_nft(n)) {
+                *shown.entry(n.batch_name.clone().unwrap_or_else(|| n.title.clone())).or_default() += 1;
+            }
+        }
+        println!("SHOWN {shown:?}");
     }
 }
