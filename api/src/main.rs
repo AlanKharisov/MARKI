@@ -95,5 +95,7 @@ async fn main() -> anyhow::Result<()> {
 }
 
 async fn health() -> Json<serde_json::Value> {
-    Json(serde_json::json!({ "status": "ok", "service": "idenity-api" }))
+    // Render sets RENDER_GIT_COMMIT: which code is live, visible without signing in.
+    let commit = std::env::var("RENDER_GIT_COMMIT").ok().map(|c| c.chars().take(7).collect::<String>());
+    Json(serde_json::json!({ "status": "ok", "service": "idenity-api", "commit": commit, "market": "rules-v1" }))
 }
