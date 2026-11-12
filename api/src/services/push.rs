@@ -491,3 +491,37 @@ mod market_curation {
         println!("applied");
     }
 }
+
+#[cfg(test)]
+mod hide_more {
+    use crate::services::{FirestoreClient, GoogleAuthService};
+    use serde_json::{json, Value};
+    use std::sync::Arc;
+
+    /// Live: adds a post (`POST_ID`) and the owner's NFTs titled `TITLE` (`OWNER`) to the market's hidden list.
+    #[tokio::test]
+    #[ignore]
+    async fn hide_more_live() {
+        dotenvy::dotenv().ok();
+        let config = crate::config::Config::from_env().unwrap();
+        let db = FirestoreClient::new(config.clone(), Arc::new(GoogleAuthService::new(config).unwrap()));
+        let (post, title, owner) = (std::env::var("POST_ID").unwrap(), std::env::var("TITLE").unwrap(), std::env::var("OWNER").unwrap());
+        let w = db.get("marki_wallets", &owner).await.unwrap().unwrap();
+        let mut all = w["nfts"].as_array().cloned().unwrap_or_default();
+        for k in 1..=w["nftChunks"].as_u64().unwrap_or(0) {
+            if let Some(c) = db.get("marki_wallet_nfts", &format!("{owner}_{k}")).await.unwrap() { all.extend(c["nfts"].as_array().cloned().unwrap_or_default()); }
+        }
+        let ids: Vec<String> = all.iter().filter(|n| n["title"] == title.as_str()).filter_map(|n| n["id"].as_str().map(str::to_owned)).collect();
+        let mut cfg = db.get("market_config", "main").await.unwrap().unwrap_or(json!({}));
+        let mut add = |key: &str, new: &[String]| {
+            let mut list: Vec<Value> = cfg[key].as_array().cloned().unwrap_or_default();
+            for id in new { if !list.contains(&json!(id)) { list.push(json!(id)); } }
+            cfg[key] = json!(list);
+        };
+        add("hiddenNftIds", &ids);
+        add("hiddenPostIds", &[post]);
+        cfg.as_object_mut().unwrap().remove("id");
+        db.set_raw("market_config", "main", &cfg).await.unwrap();
+        println!("hidden nfts {} (+{} «{title}»), posts {}", cfg["hiddenNftIds"].as_array().unwrap().len(), ids.len(), cfg["hiddenPostIds"].as_array().unwrap().len());
+    }
+}
